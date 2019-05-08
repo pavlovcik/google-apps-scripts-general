@@ -4,7 +4,7 @@ import generateAccountID from "./generateAccountID";
 /**
  * Gets child folders, recursively.
  * @param rootFolder A current working directory to get account folders from.
- * @param claimedByAccountID This is for subfolders under a parent folder with a recognized account ID.
+ * @param registeredAccountID This is for subfolders under a parent folder with a recognized account ID.
  * @param rfp REGEX_FOR_PREFIX
  * @param rpe RENAME_PERMISSIONS_ENABLED
  * @param dak DELIMITER_AFTER_KEY
@@ -13,7 +13,7 @@ import generateAccountID from "./generateAccountID";
  */
 export default function getChildFolders(
     rootFolder: GoogleAppsScript.Drive.Folder,
-    claimedByAccountID: string,
+    registeredAccountID: string,
     rfp: RegExp,
     rpe: boolean,
     dak: string,
@@ -25,16 +25,16 @@ export default function getChildFolders(
 
     while (accountFolders.hasNext()) {
         const accountFolder = accountFolders.next();
-        const accountFolderName = accountFolder.getName();
-        const matchesForAccountID = claimedByAccountID
-            ? claimedByAccountID.match(rfp)
-            : accountFolderName.match(rfp);
+        const folderName = accountFolder.getName();
+        const matchesForAccountID = registeredAccountID
+            ? registeredAccountID.match(rfp)
+            : folderName.match(rfp);
 
-        console.log(
-            `
-            Getting child folders of '${accountFolderName}'. Owned by '${claimedByAccountID || accountFolderName}'
-            claimedByAccountID: '${claimedByAccountID}'
-            accountFolderName: '${accountFolderName}'
+        console.log(`
+
+            Getting child folders of '${folderName}'. Owned by '${registeredAccountID || folderName}'
+            registeredAccountID: '${registeredAccountID}'
+            folderName: '${folderName}'
             `
         );
 
@@ -46,8 +46,8 @@ export default function getChildFolders(
             console.log(`Has an account ID '${accountID}'  in the parent folder.`);
         } else {
             // Does not have an account ID
-            // console.log(`Does not have an account id... what is the value of claimedByAccountID: ${claimedByAccountID}`);
-            accountID = claimedByAccountID || generateAccountID(accountFolder, accountFoldersFreshIterator, rpe, dak, dik, fan);
+            // console.log(`Does not have an account id... what is the value of registeredAccountID: ${registeredAccountID}`);
+            accountID = registeredAccountID || generateAccountID(accountFolder, accountFoldersFreshIterator, rpe, dak, dik, fan);
         }
 
         const isNullAccount = /^0000/.test(accountID);
