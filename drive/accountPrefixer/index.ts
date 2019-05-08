@@ -1,11 +1,16 @@
 import "google-apps-script";
+
 import handleUnprefixedAccounts from "./handleUnprefixedAccounts";
 import getChildFolders from "./getChildFolders";
 
 const RENAME_PERMISSIONS_ENABLED = false;
 const DELIMITER_AFTER_KEY = " ";
+const REGEX_FOR_PREFIX = new RegExp("^[0-9]{4}" + DELIMITER_AFTER_KEY); //  Capital letters or numbers with a delimiter in front e.g. "AB01 "
+
+const FANCY_ACCOUNT_NAMES = false; //	This would include the numerical prefix, along with the shortned text e.g. "Inventum Digital" >> "0086-ID Inventum Digital"
+
+
 const DELIMITER_IN_KEY = "-"; //  Between account ID and name. e.g. "0001 Inventum Digital, Inc."
-const REGEX_FOR_PREFIX = new RegExp("^[A-Z0-9]{4}" + DELIMITER_IN_KEY); //  Capital letters or numbers with a delimiter in front e.g. "AB01 "
 // const REGEX_FOR_PREFIX = new RegExp("\d{4}" + DELIMITER_IN_KEY + "\S{1,4}" + DELIMITER_AFTER_KEY); //  Capital letters or numbers with a delimiter in front e.g. "AB01 "
 
 const FOLDERS = {
@@ -45,7 +50,13 @@ function CreativeTitler() {
 	// titler2(folders.personal);
 	console.log("===== folders.test =====");
 
-	handleUnprefixedAccounts(FOLDERS.test, REGEX_FOR_PREFIX, RENAME_PERMISSIONS_ENABLED, DELIMITER_AFTER_KEY);
+	handleUnprefixedAccounts(
+		FOLDERS.test,
+		REGEX_FOR_PREFIX,
+		RENAME_PERMISSIONS_ENABLED,
+		DELIMITER_AFTER_KEY,
+		DELIMITER_IN_KEY
+	);
 
 	console.log("===== EXECUTION COMPLETE =====");
 }
@@ -57,9 +68,11 @@ function CreativeTitler() {
 function crawlFolderTree(folderId: string) {
 	return getChildFolders(
 		DriveApp.getFolderById(folderId),
-		undefined,
+		void 0,
 		REGEX_FOR_PREFIX,
 		RENAME_PERMISSIONS_ENABLED,
-		DELIMITER_AFTER_KEY
+		DELIMITER_AFTER_KEY,
+		DELIMITER_IN_KEY,
+		FANCY_ACCOUNT_NAMES
 	);
 }

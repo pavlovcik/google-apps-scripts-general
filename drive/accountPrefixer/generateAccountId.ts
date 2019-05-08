@@ -1,19 +1,25 @@
 /**
- * @param {string} input
- * @param {GoogleAppsScript.Drive.FolderIterator} childFolders
+ * Generates account id
+ * @param folderName
+ * @param siblingFolders
+ * @param DELIMITER_IN_KEY
+ * @param FANCY_ACCOUNT_NAMES
+ * @returns {string} A new account ID
  */
-export default function generateAccountID(input: string, childFolders: GoogleAppsScript.Drive.FolderIterator) {
-    console.log("generating account ID for " + input);
+export default function generateAccountID(
+    folderName: string,
+    siblingFolders: GoogleAppsScript.Drive.FolderIterator,
+    DELIMITER_IN_KEY: string,
+    FANCY_ACCOUNT_NAMES: boolean
+): string {
+    console.log(`Generating account ID for '${folderName}'`);
 
-    var accountName = input;
-
-    var shortEnoughToSkip = input.length <= 4;
+    const accountName = folderName;
+    const shortEnoughToSkip = folderName.length <= 4;
+    let shorthandAccountName: string;
 
     if (!shortEnoughToSkip) {
-        var capsOnly = extractCaps(accountName);
-        var shorthandAccountName: string;
-
-        // console.log("length: " + capsOnly.length);
+        const capsOnly = extractCaps(accountName);
 
         if (capsOnly.length <= 1) {
             shorthandAccountName = disemvowelIfLessThan(accountName, 4);
@@ -24,25 +30,28 @@ export default function generateAccountID(input: string, childFolders: GoogleApp
         // console.log({ shorthandAccountName });
 
         if (shorthandAccountName.length >= 5) {
-            // console.log("before truncation: " + shorthandAccountName);
+            // console.log(`before truncation: ` + shorthandAccountName);
             shorthandAccountName = truncate(shorthandAccountName);
         }
-    } else shorthandAccountName = input;
+    } else shorthandAccountName = folderName;
 
-    var highestAccountNumber = incrementAccountNumber(childFolders);
+    const highestAccountNumber = incrementAccountNumber(siblingFolders);
+    const paddedNumber = pad(highestAccountNumber, 4);
 
-    var paddedNumber = pad(highestAccountNumber, 4);
+    const RENDER = FANCY_ACCOUNT_NAMES
+        ? paddedNumber + DELIMITER_IN_KEY + shorthandAccountName.toUpperCase()
+        : paddedNumber;
 
-    return paddedNumber + DELIMITER_IN_KEY + shorthandAccountName.toUpperCase();
+    console.log(`Rendered account ID: ${RENDER}`);
 
-    // return shorthandAccountName.toUpperCase() + DELIMITER + paddedNumber
+    return RENDER;
 
 	/**
 	 * @param {number} a the number to convert
 	 * @param {number} b number of resulting characters
 	 */
     function pad(a: number, b: number) {
-        return (1e15 + a + "").slice(-b);
+        return (1e15 + a + ``).slice(-b);
     }
 
 	/**
@@ -51,27 +60,42 @@ export default function generateAccountID(input: string, childFolders: GoogleApp
 	 */
     function disemvowelIfLessThan(str: string, lessThan: number): string {
         if (str.length < lessThan) return str;
-        var regex = /[aeiou\s]/g;
-        var strDead = str.replace(regex, "");
+        const regex = /[aeiou\s]/g;
+        const strDead = str.replace(regex, ``);
 
-        var firstLetterIsVowel = regex.test(str.charAt(0));
+        const firstLetterIsVowel = regex.test(str.charAt(0));
         if (firstLetterIsVowel) return str.charAt(0) + strDead;
 
         return strDead;
     }
 
 	/**
-	 * @param {GoogleAppsScript.Drive.FolderIterator} folderNames
+	 * @param {GoogleAppsScript.Drive.FolderIterator} siblingFolders
 	 */
-    function incrementAccountNumber(folderNames: GoogleAppsScript.Drive.FolderIterator) {
-        var parsed = [];
-        // console.log(folderNames);
-        // var x = folderNames.length;
+    function incrementAccountNumber(
+        siblingFolders: GoogleAppsScript.Drive.FolderIterator
+    ) {
+        const parsed = [];
 
-        while (folderNames.hasNext()) {
-            var childFolder = folderNames.next();
-            var prefixedAccountNumber = childFolder.getName().match(/^\d+?\D/gim);
-            if (prefixedAccountNumber) parsed.push(parseInt(prefixedAccountNumber.shift()));
+        let buffer = JSON.stringify(siblingFolders);
+
+        while (siblingFolders.hasNext()) {
+            const siblingFolder = siblingFolders.next();
+            const siblingFolderName = siblingFolder.getName();
+            let patternFound = siblingFolderName.match(/^\d+?\D/g);
+
+            if (patternFound) {
+                let prefixedAccountNumberParsedString: string = patternFound.shift();
+                parsed.push(+(prefixedAccountNumberParsedString));
+
+                console.log(`
+
+                "parsed1-raw": ${prefixedAccountNumberParsedString};
+                "parsed2-integer": ${+(prefixedAccountNumberParsedString)};
+                "parsed3-buffer": ${JSON.stringify(parsed)};
+                Folder Name: '${siblingFolderName}';
+`);
+            }
         }
 
         parsed.sort(function sortNumber(a, b) {
@@ -86,11 +110,12 @@ export default function generateAccountID(input: string, childFolders: GoogleApp
 	 * @param {string} string
 	 */
     function truncate(string: string) {
-        var length = string.length;
+        const length = string.length;
 
         if (length >= 5) {
             // console.log({ preTruncated: string });
-            var truncated = string.slice(0, length - 2) + string.slice(length - 1, string.length);
+            const truncated =
+                string.slice(0, length - 2) + string.slice(length - 1, string.length);
             // console.log({ truncated });
 
             return truncate(truncated);
@@ -105,13 +130,13 @@ export default function generateAccountID(input: string, childFolders: GoogleApp
 	 * @param {String} input
 	 */
     function extractCaps(input: string) {
-        var firstLetter = input.charAt(0);
-        var notCapitalized = firstLetterIsNotCapitalized(firstLetter);
+        const firstLetter = input.charAt(0);
+        const notCapitalized = firstLetterIsNotCapitalized(firstLetter);
+        const caps = input.match(/[A-Z]/gm);
 
-        var caps = input.match(/[A-Z]/gm);
-
+        let extracted: string;
         if (caps) {
-            var extracted = caps.join().replace(/,/gim, "");
+            extracted = caps.join().replace(/,/gim, ``);
 
             if (notCapitalized) {
                 extracted = firstLetter.toUpperCase().concat(extracted);
@@ -121,19 +146,20 @@ export default function generateAccountID(input: string, childFolders: GoogleApp
 
             if (extracted.length >= 1) return extracted;
         }
-        return "";
+        return ``;
     }
 
 	/**
 	 * @param {string} firstLetter
 	 */
     function firstLetterIsNotCapitalized(firstLetter: string) {
+        let notCapitalized: boolean;
         if (firstLetter == firstLetter.toLowerCase()) {
             // The character is lowercase
-            var notCapitalized = true;
+            notCapitalized = true;
         } else {
             // The character is uppercase
-            var notCapitalized = false;
+            notCapitalized = false;
         }
         return notCapitalized;
     }
