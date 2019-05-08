@@ -1,17 +1,14 @@
-/**
- * Generates account id
- * @param folderName
- * @param siblingFolders
- * @param DELIMITER_IN_KEY
- * @param FANCY_ACCOUNT_NAMES
- * @returns {string} A new account ID
- */
+
 export default function generateAccountID(
-    folderName: string,
+    folder: GoogleAppsScript.Drive.Folder,
     siblingFolders: GoogleAppsScript.Drive.FolderIterator,
+    RENAME_PERMISSIONS_ENABLED: boolean,
+    DELIMITER_AFTER_KEY: string,
     DELIMITER_IN_KEY: string,
-    FANCY_ACCOUNT_NAMES: boolean
+    FANCY_ACCOUNT_NAMES: boolean,
 ): string {
+
+    const folderName = folder.getName();
     console.log(`Generating account ID for '${folderName}'`);
 
     const accountName = folderName;
@@ -43,6 +40,18 @@ export default function generateAccountID(
         : paddedNumber;
 
     console.log(`Rendered account ID: ${RENDER}`);
+    console.log(`
+
+    paddedNumber: '${paddedNumber}';
+    DELIMITER_AFTER_KEY: '${DELIMITER_AFTER_KEY}';
+    folderName: '${folderName}'
+
+    `);
+
+    console.log(`The folder to be renamed is '${folder}' because it lacks an account ID.`);
+    if (RENAME_PERMISSIONS_ENABLED) {
+        folder.setName(paddedNumber + DELIMITER_AFTER_KEY + folderName);
+    }
 
     return RENDER;
 

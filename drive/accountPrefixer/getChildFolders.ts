@@ -53,11 +53,10 @@ export default function getChildFolders(
 
         } else {
             // Does not have an account ID
-            console.log(`Does not have an account id... what is the value of claimedByAccountID: ${claimedByAccountID}`);
-            accountID = claimedByAccountID || generateAccountID(childFolderName, childFolders, dik, fan);
+            // console.log(`Does not have an account id... what is the value of claimedByAccountID: ${claimedByAccountID}`);
+            accountID = claimedByAccountID || generateAccountID(childFolder, childFolders, rpe, dak, dik, fan);
         }
 
-        console.log(`Renaming`);
         renameChildFiles(childFolder, accountID, rfp, rpe, dak, dik, fan);
     }
 
