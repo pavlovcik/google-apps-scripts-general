@@ -1,0 +1,19 @@
+{
+  "name": "general",
+  "version": "1.0.0",
+  "description": "My general Google Apps Scripts project.",
+  "main": "index.js",
+  "dependencies": {
+    "@types/google-apps-script": "0.0.46"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "login": "clasp login --creds ./creds.json",
+    "logs": "clasp logs --watch",
+    "watch": "nodemon -x 'clasp push && clasp run SteadfastAppropriator'",
+    "publish": "clasp deploy"
+  },
+  "author": "Alexander Pavlovcik <appsscripts@pavlovcik.com>",
+  "license": "ISC"
+}
