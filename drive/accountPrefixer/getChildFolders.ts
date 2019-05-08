@@ -31,13 +31,18 @@ export default function getChildFolders(
             : accountFolderName.match(rfp);
 
         console.log(
-            `Getting child folders of '${accountFolderName}'. Owned by '${claimedByAccountID || accountFolderName}'`
+            `
+            Getting child folders of '${accountFolderName}'. Owned by '${claimedByAccountID || accountFolderName}'
+            claimedByAccountID: '${claimedByAccountID}'
+            accountFolderName: '${accountFolderName}'
+            `
         );
 
         let accountID: string;
 
         if (matchesForAccountID) {  //  Has an account ID in the parent folder
-            accountID = matchesForAccountID.shift();
+            accountID = matchesForAccountID.shift();    //  Still includes delimiter after prefix!!!
+            accountID = accountID.slice(0, accountID.indexOf(dak))  //  delimiter after prefix it should be the first symbol of its kind at the beginning.
             console.log(`Has an account ID '${accountID}'  in the parent folder.`);
         } else {
             // Does not have an account ID

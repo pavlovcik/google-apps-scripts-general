@@ -20,7 +20,7 @@ export default function renameChildFiles(
 	FANCY_ACCOUNT_NAMES: boolean
 ) {
 
-    // if (accountID) console.log(
+	// if (accountID) console.log(
 	// 		`Account ID has been set for '${cwd.getName()}' (so name generation should not happen!)`
 	// 	);
 	// else console.log(
@@ -51,12 +51,16 @@ export default function renameChildFiles(
 				console.error(`Can not rename ` + childFileName + e);
 			}
 		} else {
-			const accountName = childFileName.replace(REGEX_FOR_PREFIX, ``);
-			const expectedName = idWithDelimiter + accountName;
+			const accountFolderName = childFileName.replace(REGEX_FOR_PREFIX, ``);
+			const expectedName = idWithDelimiter + accountFolderName;
 
 			if (childFileName != expectedName) {
-				console.log(
-					`The file to be renamed is '${childFileName}' because it is incorrectly prefixed.`
+				console.log(`
+
+					The file to be renamed is '${childFileName}' because it is incorrectly prefixed.
+					The expected name is '${expectedName}'
+					(idWithDelimiter: '${idWithDelimiter}'  + accountName: '${accountFolderName}')
+					`
 				);
 				if (RENAME_PERMISSIONS_ENABLED) {
 					childFile.setName(expectedName);
