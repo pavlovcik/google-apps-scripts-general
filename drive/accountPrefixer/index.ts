@@ -10,7 +10,7 @@ const FANCY_ACCOUNT_NAMES = false; //	This would include the numerical prefix, a
 const DELIMITER_IN_KEY = "-"; //  Between account ID and name. e.g. "0001 Inventum Digital, Inc."
 // const REGEX_FOR_PREFIX = new RegExp("\d{4}" + DELIMITER_IN_KEY + "\S{1,4}" + DELIMITER_AFTER_KEY); //  Capital letters or numbers with a delimiter in front e.g. "AB01 "
 const FOLDERS = {
-	test: "1LDIkYDZGrb6tBi3vZYv3shkXvGK49W5b",
+	test: "1K0d5qBDwuuyWr4WcY5L36JsUZPh4mEu6",
 	// personal: "1sEVOnqwKmYTZMeBsWXiNYFvbHYfGWvwQ",
 	// inventum: "0B3hiA5zCI0EDcEcxbnY0anMyLU0"
 };

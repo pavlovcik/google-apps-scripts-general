@@ -1,14 +1,16 @@
+import "google-apps-script"
 
 export default function generateAccountID(
-    folder: GoogleAppsScript.Drive.Folder,
-    siblingFolders: GoogleAppsScript.Drive.FolderIterator,
+    accountFolder: GoogleAppsScript.Drive.Folder,
+    accountFolders: GoogleAppsScript.Drive.FolderIterator,
+
     RENAME_PERMISSIONS_ENABLED: boolean,
     DELIMITER_AFTER_KEY: string,
     DELIMITER_IN_KEY: string,
     FANCY_ACCOUNT_NAMES: boolean,
 ): string {
 
-    const folderName = folder.getName();
+    const folderName = accountFolder.getName();
     console.log(`Generating account ID for '${folderName}'`);
 
     const accountName = folderName;
@@ -32,7 +34,9 @@ export default function generateAccountID(
         }
     } else shorthandAccountName = folderName;
 
-    const highestAccountNumber = incrementAccountNumber(siblingFolders);
+    // accountFolders = accountFolder.getFolders();   //  @todo TEMPORARY
+
+    const highestAccountNumber = incrementAccountNumber(accountFolders);
     const paddedNumber = pad(highestAccountNumber, 4);
 
     const RENDER = FANCY_ACCOUNT_NAMES
@@ -48,9 +52,9 @@ export default function generateAccountID(
 
     `);
 
-    console.log(`The folder to be renamed is '${folder}' because it lacks an account ID.`);
+    console.log(`The folder to be renamed is '${accountFolder}' because it lacks an account ID.`);
     if (RENAME_PERMISSIONS_ENABLED) {
-        folder.setName(paddedNumber + DELIMITER_AFTER_KEY + folderName);
+        accountFolder.setName(paddedNumber + DELIMITER_AFTER_KEY + folderName);
     }
 
     return RENDER;
@@ -81,17 +85,31 @@ export default function generateAccountID(
 	/**
 	 * @param {GoogleAppsScript.Drive.FolderIterator} siblingFolders
 	 */
-    function incrementAccountNumber(
-        siblingFolders: GoogleAppsScript.Drive.FolderIterator
-    ) {
+    function incrementAccountNumber( siblingFolders: GoogleAppsScript.Drive.FolderIterator ) {
         const parsed = [];
 
         let buffer = JSON.stringify(siblingFolders);
+
+        console.log(`
+
+        Checking sibling folder names...
+        siblingFolders: ${buffer}
+        `);
+
+
 
         while (siblingFolders.hasNext()) {
             const siblingFolder = siblingFolders.next();
             const siblingFolderName = siblingFolder.getName();
             let patternFound = siblingFolderName.match(/^\d+?\D/g);
+
+            console.log(`
+
+            siblingFolderName: ${siblingFolderName}
+            patternFound: ${patternFound}
+            parsed: ${parsed}
+
+            `);
 
             if (patternFound) {
                 let prefixedAccountNumberParsedString: string = patternFound.shift();
@@ -103,6 +121,7 @@ export default function generateAccountID(
                 "parsed2-integer": ${+(prefixedAccountNumberParsedString)};
                 "parsed3-buffer": ${JSON.stringify(parsed)};
                 Folder Name: '${siblingFolderName}';
+
 `);
             }
         }

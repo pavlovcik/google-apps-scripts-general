@@ -28,11 +28,11 @@ export default function renameChildFiles(
 	// 	);
 
 	const selectedFolderChildFiles = cwd.getFiles();
+	const idWithDelimiter = accountID + DELIMITER_AFTER_KEY;
 
 	while (selectedFolderChildFiles.hasNext()) {
 		const childFile = selectedFolderChildFiles.next();
 		const childFileName = childFile.getName();
-		const idWithDelimiter = accountID + DELIMITER_AFTER_KEY;
 
 		if (!REGEX_FOR_PREFIX.test(childFileName)) {
 			//  If the name of the FILE isn't prefixed.
@@ -45,7 +45,7 @@ export default function renameChildFiles(
 					`Adding the prefix '${idWithDelimiter}' to filename '${childFileName}'.`
 				);
 				if (RENAME_PERMISSIONS_ENABLED) {
-					childFile.setName(accountID + childFileName);	//	Without delimiter because the delimiter kept stacking.
+					childFile.setName(idWithDelimiter + childFileName);
 				}
 			} catch (e) {
 				console.error(`Can not rename ` + childFileName + e);
