@@ -3,87 +3,63 @@ import generateAccountID from "./generateAccountID";
 
 /**
  * Gets child folders, recursively.
- * @param cwd cwd A current working directory to get child folders of.
- * @param claimedByAccountID claimedByAccountID This is for subfolders under a parent folder with a recognized account ID.
- * @param REGEX_FOR_PREFIX
- * @param RENAME_PERMISSIONS_ENABLED
- * @param DELIMITER_AFTER_KEY
- * @param DELIMITER_IN_KEY
- * @param FANCY_ACCOUNT_NAMES
+ * @param cwd A current working directory to get child folders of.
+ * @param claimedByAccountID This is for subfolders under a parent folder with a recognized account ID.
+ * @param rfp REGEX_FOR_PREFIX
+ * @param rpe RENAME_PERMISSIONS_ENABLED
+ * @param dak DELIMITER_AFTER_KEY
+ * @param dik DELIMITER_IN_KEY
+ * @param fan FANCY_ACCOUNT_NAMES
  */
 export default function getChildFolders(
     cwd: GoogleAppsScript.Drive.Folder,
     claimedByAccountID: string,
-    REGEX_FOR_PREFIX: RegExp,
-    RENAME_PERMISSIONS_ENABLED: boolean,
-    DELIMITER_AFTER_KEY: string,
-    DELIMITER_IN_KEY: string,
-    FANCY_ACCOUNT_NAMES: boolean
+    rfp: RegExp,
+    rpe: boolean,
+    dak: string,
+    dik: string,
+    fan: boolean
 ) {
-
     const childFolders = cwd.getFolders();
 
     while (childFolders.hasNext()) {
         const childFolder = childFolders.next();
         const childFolderName = childFolder.getName();
-
-        // console.log({ childFolderName });
-
         const matchesForAccountID = claimedByAccountID
-            ? claimedByAccountID.match(REGEX_FOR_PREFIX)
-            : childFolderName.match(REGEX_FOR_PREFIX);
+            ? claimedByAccountID.match(rfp)
+            : childFolderName.match(rfp);
 
-        // console.log({
-        //     childFolderName,
-        //     "regex": childFolderName.match(REGEX_FOR_PREFIX)
-        //     // parsingAccountID,
-        //     // claimedByAccountID,
-        //     // REGEX_FOR_PREFIX
-        // });
+        console.log(
+            `Getting child folders of '${childFolderName}'. Owned by '${claimedByAccountID || childFolderName}'`
+        );
 
         let accountID: string;
 
-        if (matchesForAccountID) { //  Has an account ID in the parent folder
-
-            // console.log(`A match!`);
+        if (matchesForAccountID) {
+            //  Has an account ID in the parent folder
 
             accountID = matchesForAccountID.shift();
-            const nullAccount = /^0000/.test(accountID);
+            console.log(`Has an account ID '${accountID}'  in the parent folder.`);
 
-            if (nullAccount) continue;  //  Ignore this account
-            else renameChildFiles(
-                childFolder,
-                accountID,
-                REGEX_FOR_PREFIX,
-                RENAME_PERMISSIONS_ENABLED,
-                DELIMITER_AFTER_KEY,
-                DELIMITER_IN_KEY,
-                FANCY_ACCOUNT_NAMES
-            );
+            const nullAccount = /^0000/.test(accountID);
+            if (nullAccount) {
+                //  Ignore this account
+                console.log(`Ignored because account number 0000.`);
+                continue;
+            } else {
+
+                // renameChildFiles(childFolder, accountID, rfp, rpe, dak, dik, fan);
+            }
 
         } else {
-
-            // console.log(`No match!`);
-
-            accountID = generateAccountID(
-                childFolderName,
-                childFolders,
-                DELIMITER_IN_KEY,
-                FANCY_ACCOUNT_NAMES
-            );
-
-            renameChildFiles(
-                childFolder,
-                accountID,
-                REGEX_FOR_PREFIX,
-                RENAME_PERMISSIONS_ENABLED,
-                DELIMITER_AFTER_KEY,
-                DELIMITER_IN_KEY,
-                FANCY_ACCOUNT_NAMES
-            );
-
+            // Does not have an account ID
+            console.log(`Does not have an account id... what is the value of claimedByAccountID: ${claimedByAccountID}`);
+            accountID = claimedByAccountID || generateAccountID(childFolderName, childFolders, dik, fan);
         }
 
+        console.log(`Renaming`);
+        renameChildFiles(childFolder, accountID, rfp, rpe, dak, dik, fan);
     }
-    // return childFolders
+
+
 }

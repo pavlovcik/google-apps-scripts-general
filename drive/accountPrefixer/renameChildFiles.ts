@@ -20,6 +20,11 @@ export default function renameChildFiles(
     FANCY_ACCOUNT_NAMES: boolean
 ) {
 
+    if (accountID) {
+        console.log(`Account ID has been set for '${cwd.getName()}' (so name generation should not happen!)`);
+    } else {
+        console.log(`Account ID has NOT been set for '${cwd.getName()}' (so name generation should happen!)`);
+    }
     // console.log(`Congrats for getting to the rename module!`);
 
     const selectedFolderChildFiles = cwd.getFiles();
@@ -28,12 +33,11 @@ export default function renameChildFiles(
         const childFile = selectedFolderChildFiles.next();
         const childFileName = childFile.getName();
 
-        console.log(`The file to be renamed is '${childFileName}'`);
 
         const idWithDelimiter = accountID + DELIMITER_AFTER_KEY;
 
         if (!REGEX_FOR_PREFIX.test(childFileName)) {    //  If the name of the FILE isn't prefixed.
-            console.log(`The name of the file '${childFileName}' is NOT prefixed.`);
+            console.log(`The file to be renamed is '${childFileName}' because it lacks a prefix.`);
             try {   //  Requires permissions to rename.
                 console.log(`Adding the prefix '${idWithDelimiter}' to filename '${childFileName}'.`);
                 if (RENAME_PERMISSIONS_ENABLED) {
@@ -46,15 +50,14 @@ export default function renameChildFiles(
             const childFileName = childFile.getName();
             const accountName = childFileName.replace(REGEX_FOR_PREFIX, ``);
             const expectedName = idWithDelimiter + accountName;
-            console.log(`The name of the file '${childFileName}' is prefixed.`);
 
             if (childFileName != expectedName) {
-                console.log(`But the prefix is incorrect.`);
+                console.log(`The file to be renamed is '${childFileName}' because it is incorrectly prefixed.`);
                 if (RENAME_PERMISSIONS_ENABLED) {
                     childFile.setName(expectedName);
                 }
             } else {
-                console.log(`The filename is OK and left as is.`);
+                console.log(`The filename is OK of '${childFileName}'.`);
             }
 
         }

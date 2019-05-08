@@ -1,6 +1,6 @@
 import "google-apps-script";
 
-import handleUnprefixedAccounts from "./handleUnprefixedAccounts";
+// import handleUnprefixedAccounts from "./handleUnprefixedAccounts";
 import getChildFolders from "./getChildFolders";
 
 const RENAME_PERMISSIONS_ENABLED = false;
@@ -50,13 +50,14 @@ function CreativeTitler() {
 	// titler2(folders.personal);
 	console.log("===== folders.test =====");
 
-	handleUnprefixedAccounts(
-		FOLDERS.test,
-		REGEX_FOR_PREFIX,
-		RENAME_PERMISSIONS_ENABLED,
-		DELIMITER_AFTER_KEY,
-		DELIMITER_IN_KEY
-	);
+	// handleUnprefixedAccounts(
+	// 	FOLDERS.test,
+	// 	REGEX_FOR_PREFIX,
+	// 	RENAME_PERMISSIONS_ENABLED,
+	// 	DELIMITER_AFTER_KEY,
+	// 	DELIMITER_IN_KEY,
+	// 	FANCY_ACCOUNT_NAMES
+	// );
 
 	console.log("===== EXECUTION COMPLETE =====");
 }
