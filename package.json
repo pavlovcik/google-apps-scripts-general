@@ -1,6 +1,6 @@
 {
   "name": "general",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "My general Google Apps Scripts project.",
   "main": "index.js",
   "dependencies": {
