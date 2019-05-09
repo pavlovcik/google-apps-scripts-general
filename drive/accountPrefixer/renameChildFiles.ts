@@ -8,7 +8,7 @@ import getChildFolders from "./getChildFolders";
  * @param RENAME_PERMISSIONS_ENABLED Permissions to make persisting changes to Drive.
  * @param DELIMITER_AFTER_KEY What seperates the account ID with the account name.
  * @param DELIMITER_IN_KEY
- * @param FANCY_ACCOUNT_NAMES
+ * @param fancyAccountNames
  */
 export default function renameChildFiles(
 	cwd: GoogleAppsScript.Drive.Folder,
@@ -17,7 +17,8 @@ export default function renameChildFiles(
 	RENAME_PERMISSIONS_ENABLED: boolean,
 	DELIMITER_AFTER_KEY: string,
 	DELIMITER_IN_KEY: string,
-	FANCY_ACCOUNT_NAMES: boolean
+	fancyAccountNames: boolean,
+	globalMaxAccountNumberCount: number
 ) {
 
 	// if (accountID) console.log(
@@ -78,6 +79,7 @@ export default function renameChildFiles(
 		RENAME_PERMISSIONS_ENABLED,
 		DELIMITER_AFTER_KEY,
 		DELIMITER_IN_KEY,
-		FANCY_ACCOUNT_NAMES
+		fancyAccountNames,
+		globalMaxAccountNumberCount
 	);
 }

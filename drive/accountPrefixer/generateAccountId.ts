@@ -1,194 +1,199 @@
-import "google-apps-script"
+import "google-apps-script";
+import incrementAccountNumber from "./incrementAccountNumber";
 
+/**
+ * @description Generates an account ID
+ * @author Alexander Pavlovcik
+ *
+ * @param accountFolder Current working directory.
+ * @param accountFolders Sibling folders.
+ * @param RFP REGEX_FOR_PREFIX - Regular expression used to parse the account ID. This can be for either normal or fancy mode.
+ * @param RPE RENAME_PERMISSIONS_ENABLED - Empowers the software to make persisting changes to disk (Drive).
+ * @param DAK DELIMITER_AFTER_KEY - Character to separate the account ID and the account name.
+ * @param DIK DELIMITER_IN_KEY - Character to separate the account number and the account shorthand name within the account ID.
+ * @param FAN fancyAccountNames - Enables account shorthand name in account ID.
+ * globalMaxAccountNumberCount
+ *
+ * @returns {string} A generated account id.
+ */
 export default function generateAccountID(
-    accountFolder: GoogleAppsScript.Drive.Folder,
-    accountFolders: GoogleAppsScript.Drive.FolderIterator,
-
-    RENAME_PERMISSIONS_ENABLED: boolean,
-    DELIMITER_AFTER_KEY: string,
-    DELIMITER_IN_KEY: string,
-    FANCY_ACCOUNT_NAMES: boolean,
+	accountFolder: GoogleAppsScript.Drive.Folder,
+	accountFolders: GoogleAppsScript.Drive.FolderIterator,
+	RFP: RegExp,
+	RPE: boolean,
+	DAK: string,
+	DIK: string,
+	FAN: boolean,
+	// accountFoldersFreshIterator2: GoogleAppsScript.Drive.FolderIterator // @TODO: add to definition
+	globalMaxAccountNumberCount: number
 ): string {
+	const folderName = accountFolder.getName();
+	console.log(`Generating account ID for '${folderName}'`);
 
-    const folderName = accountFolder.getName();
-    console.log(`Generating account ID for '${folderName}'`);
+	let shorthandAccountName: string = generateShorthandAccountName(folderName);
 
-    const accountName = folderName;
-    const shortEnoughToSkip = folderName.length <= 4;
-    let shorthandAccountName: string;
 
-    if (!shortEnoughToSkip) {
-        const capsOnly = extractCaps(accountName);
 
-        if (capsOnly.length <= 1) {
-            shorthandAccountName = disemvowelIfLessThan(accountName, 4);
-        } else {
-            shorthandAccountName = capsOnly;
-        }
+/**
+ *  Handle logic for highest account number in a special manner because
+ * Google Apps Scripts shares variable memory in a very strange manner.
+ *
+ * Basically this requires a manual verification before clobbering the value.
+ */
 
-        // console.log({ shorthandAccountName });
+	const highestAccountNumber = incrementAccountNumber({
+		siblingFolders: accountFolders,
+		globalMaxAccountNumberCount
+		// siblingFoldersCLONE: accountFoldersFreshIterator2
+		// RFP,
+		// DAK,
+		// DIK,
+		// FAN
+	});
 
-        if (shorthandAccountName.length >= 5) {
-            // console.log(`before truncation: ` + shorthandAccountName);
-            shorthandAccountName = truncate(shorthandAccountName);
-        }
-    } else shorthandAccountName = folderName;
+	console.log(`
 
-    // accountFolders = accountFolder.getFolders();   //  @todo TEMPORARY
+	highestAccountNumber: ${highestAccountNumber}
+	globalMaxAccountNumberCount: ${globalMaxAccountNumberCount}
+	`);
 
-    const highestAccountNumber = incrementAccountNumber(accountFolders);
-    const paddedNumber = pad(highestAccountNumber, 4);
+	const paddedNumber = pad(highestAccountNumber, 4);
 
-    const RENDER = FANCY_ACCOUNT_NAMES
-        ? paddedNumber + DELIMITER_IN_KEY + shorthandAccountName.toUpperCase()
-        : paddedNumber;
+	const RENDER = FAN
+		? paddedNumber + DIK + shorthandAccountName.toUpperCase()
+		: paddedNumber;
 
-    console.log(`Rendered account ID: ${RENDER}`);
-    console.log(`
+	console.log(`Rendered account ID: ${RENDER}`);
+	console.log(`
 
     paddedNumber: '${paddedNumber}';
-    DELIMITER_AFTER_KEY: '${DELIMITER_AFTER_KEY}';
+    DELIMITER_AFTER_KEY: '${DAK}';
     folderName: '${folderName}'
 
     `);
 
-    console.log(`The folder to be renamed is '${accountFolder}' because it lacks an account ID.`);
-    if (RENAME_PERMISSIONS_ENABLED) {
-        accountFolder.setName(paddedNumber + DELIMITER_AFTER_KEY + folderName);
-    }
+	console.log(
+		`The folder '${folderName}' will be renamed because it lacks an account ID.`
+	);
+	if (RPE) {
+		let accountFolderName: string;
+		if (FAN) {
+			accountFolderName =
+				paddedNumber + //  "0000"
+				DIK + //  "-"
+				shorthandAccountName.toUpperCase() + //  "ID"
+				DAK + //  " "
+				folderName; //  "Inventum Digital"
+		} else {
+			accountFolderName =
+				paddedNumber + //  "0000"
+				DAK + //  " "
+				folderName; //  "Inventum Digital"
+		}
+		accountFolder.setName(accountFolderName);
+	}
 
-    return RENDER;
+	return RENDER;
+
+	function generateShorthandAccountName(folderName: string): string {
+		const accountName = folderName;
+		const shortEnoughToSkip = folderName.length <= 4;
+
+		let shorthandAccountName: string;
+		if (!shortEnoughToSkip) {
+			const accountNameCapitalLetters = extractCaps(accountName);
+			if (accountNameCapitalLetters.length <= 1) {
+				shorthandAccountName = removeVowels(accountName, 4);
+			} else {
+				shorthandAccountName = accountNameCapitalLetters;
+			}
+			if (shorthandAccountName.length >= 5) {
+				shorthandAccountName = truncate(shorthandAccountName);
+			}
+		} else {
+			shorthandAccountName = folderName;
+		}
+		return shorthandAccountName;
+	}
 
 	/**
 	 * @param {number} a the number to convert
 	 * @param {number} b number of resulting characters
 	 */
-    function pad(a: number, b: number) {
-        return (1e15 + a + ``).slice(-b);
-    }
+	function pad(a: number, b: number): string {
+		return (1e15 + a + ``).slice(-b);
+	}
 
 	/**
 	 * @param {String} str
 	 * @param {number} lessThan
 	 */
-    function disemvowelIfLessThan(str: string, lessThan: number): string {
-        if (str.length < lessThan) return str;
-        const regex = /[aeiou\s]/g;
-        const strDead = str.replace(regex, ``);
+	function removeVowels(str: string, lessThan: number): string {
+		if (str.length < lessThan) return str;
+		const regex = /[aeiou\s]/g;
+		const strDead = str.replace(regex, ``);
 
-        const firstLetterIsVowel = regex.test(str.charAt(0));
-        if (firstLetterIsVowel) return str.charAt(0) + strDead;
+		const firstLetterIsVowel = regex.test(str.charAt(0));
+		if (firstLetterIsVowel) return str.charAt(0) + strDead;
 
-        return strDead;
-    }
-
-	/**
-	 * @param {GoogleAppsScript.Drive.FolderIterator} siblingFolders
-	 */
-    function incrementAccountNumber( siblingFolders: GoogleAppsScript.Drive.FolderIterator ) {
-        const parsed = [];
-
-        let buffer = JSON.stringify(siblingFolders);
-
-        console.log(`
-
-        Checking sibling folder names...
-        siblingFolders: ${buffer}
-        `);
-
-
-
-        while (siblingFolders.hasNext()) {
-            const siblingFolder = siblingFolders.next();
-            const siblingFolderName = siblingFolder.getName();
-            let patternFound = siblingFolderName.match(/^\d+?\D/g);
-
-            console.log(`
-
-            siblingFolderName: ${siblingFolderName}
-            patternFound: ${patternFound}
-            parsed: ${parsed}
-
-            `);
-
-            if (patternFound) {
-                let prefixedAccountNumberParsedString: string = patternFound.shift();
-                parsed.push(+(prefixedAccountNumberParsedString));
-
-                console.log(`
-
-                "parsed1-raw": ${prefixedAccountNumberParsedString};
-                "parsed2-integer": ${+(prefixedAccountNumberParsedString)};
-                "parsed3-buffer": ${JSON.stringify(parsed)};
-                Folder Name: '${siblingFolderName}';
-
-`);
-            }
-        }
-
-        parsed.sort(function sortNumber(a, b) {
-            return a - b;
-        });
-
-        if (parsed.length) return parsed.pop() + 1;
-        else return 0;
-    }
+		return strDead;
+	}
 
 	/**
 	 * @param {string} string
 	 */
-    function truncate(string: string) {
-        const length = string.length;
+	function truncate(string: string) {
+		const length = string.length;
 
-        if (length >= 5) {
-            // console.log({ preTruncated: string });
-            const truncated =
-                string.slice(0, length - 2) + string.slice(length - 1, string.length);
-            // console.log({ truncated });
+		if (length >= 5) {
+			// console.log({ preTruncated: string });
+			const truncated =
+				string.slice(0, length - 2) + string.slice(length - 1, string.length);
+			// console.log({ truncated });
 
-            return truncate(truncated);
-        } else {
-            // console.log({ caps: string });
+			return truncate(truncated);
+		} else {
+			// console.log({ caps: string });
 
-            return string;
-        }
-    }
+			return string;
+		}
+	}
 
 	/**
 	 * @param {String} input
 	 */
-    function extractCaps(input: string) {
-        const firstLetter = input.charAt(0);
-        const notCapitalized = firstLetterIsNotCapitalized(firstLetter);
-        const caps = input.match(/[A-Z]/gm);
+	function extractCaps(input: string) {
+		const firstLetter = input.charAt(0);
+		const notCapitalized = firstLetterIsNotCapitalized(firstLetter);
+		const caps = input.match(/[A-Z]/gm);
 
-        let extracted: string;
-        if (caps) {
-            extracted = caps.join().replace(/,/gim, ``);
+		let extracted: string;
+		if (caps) {
+			extracted = caps.join().replace(/,/gim, ``);
 
-            if (notCapitalized) {
-                extracted = firstLetter.toUpperCase().concat(extracted);
-            }
+			if (notCapitalized) {
+				extracted = firstLetter.toUpperCase().concat(extracted);
+			}
 
-            // console.log(caps);
+			// console.log(caps);
 
-            if (extracted.length >= 1) return extracted;
-        }
-        return ``;
-    }
+			if (extracted.length >= 1) return extracted;
+		}
+		return ``;
+	}
 
 	/**
 	 * @param {string} firstLetter
 	 */
-    function firstLetterIsNotCapitalized(firstLetter: string) {
-        let notCapitalized: boolean;
-        if (firstLetter == firstLetter.toLowerCase()) {
-            // The character is lowercase
-            notCapitalized = true;
-        } else {
-            // The character is uppercase
-            notCapitalized = false;
-        }
-        return notCapitalized;
-    }
+	function firstLetterIsNotCapitalized(firstLetter: string) {
+		let notCapitalized: boolean;
+		if (firstLetter == firstLetter.toLowerCase()) {
+			// The character is lowercase
+			notCapitalized = true;
+		} else {
+			// The character is uppercase
+			notCapitalized = false;
+		}
+		return notCapitalized;
+	}
 }

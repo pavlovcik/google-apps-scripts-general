@@ -10,7 +10,7 @@ export default function handleUnprefixedAccounts(
     RENAME_PERMISSIONS_ENABLED: boolean,
     DELIMITER_AFTER_KEY: string,
     DELIMITER_IN_KEY: string,
-    FANCY_ACCOUNT_NAMES: boolean
+    fancyAccountNames: boolean
 ) {
     const watchDirectory = DriveApp.getFolderById(folderId);
     const childFolders = watchDirectory.getFolders();
@@ -23,10 +23,14 @@ export default function handleUnprefixedAccounts(
         if (!parsingAccountID) {
             // Means that there's no name for the parent folder ... time to generate one?
             const accountID = generateAccountID(
-                childFolder.getName(),
+                childFolder,
                 childFolders,
+                REGEX_FOR_PREFIX,
+                RENAME_PERMISSIONS_ENABLED,
+                DELIMITER_AFTER_KEY,
                 DELIMITER_IN_KEY,
-                FANCY_ACCOUNT_NAMES
+                fancyAccountNames,
+                void 0
             );
             console.log(`GENERATED ACCOUNT ID: ${accountID}`);
             if (RENAME_PERMISSIONS_ENABLED) childFolder.setName(accountID + DELIMITER_AFTER_KEY + childFolder.getName());
