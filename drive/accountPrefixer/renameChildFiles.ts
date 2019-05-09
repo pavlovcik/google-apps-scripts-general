@@ -2,15 +2,16 @@ import getChildFolders from "./getChildFolders";
 
 interface IRenameChildFiles {
 	accountFolder: GoogleAppsScript.Drive.Folder;
-	accountID: string;
+	accountID?: string;
 	REGEX_FOR_PREFIX: RegExp;
 	RENAME_PERMISSIONS_ENABLED: boolean;
 	DELIMITER_AFTER_KEY: string;
 	DELIMITER_IN_KEY: string;
 	fancyAccountNames: boolean;
-	globalMaxAccountNumberCount: number;
+	minAccountNumber: number;
 	OW?: string;
 	CW?: string;
+	AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER: number;
 }
 
 /**
@@ -27,18 +28,12 @@ export default function renameChildFiles({
 	DELIMITER_AFTER_KEY,
 	DELIMITER_IN_KEY,
 	fancyAccountNames,
-	globalMaxAccountNumberCount,
+	minAccountNumber,
 	OW,
-	CW
+	CW,
+	AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER
 }: IRenameChildFiles) {
 	const selectedFolderChildFiles = accountFolder.getFiles();
-
-	console.log(`
-
-		BEFORE REPLACE
-		OW: '${OW}'
-		CW: '${CW}'
-`);
 
 	if (OW) OW = OW.replace(/\\/gim, "");
 	//	Remove all character escapes because this keeps breaking.
@@ -48,13 +43,16 @@ export default function renameChildFiles({
 	//	Remove all character escapes because this keeps breaking.
 	else CW = "";
 
-	console.log(`
-
-		AFTER REPLACE
-		OW: '${OW}'
-		CW: '${CW}'
-`);
-
+	/**
+			idWithDelimiter =
+				OW + //	@TODO: Document // "["
+				paddedNumber + //  "0000"
+				DIK + //  "-"
+				shorthandAccountName.toUpperCase() + //  "ID"
+				CW + //	@TODO: Document // "]"
+				DAK + //  " "
+		accountFolder.setName(idWithDelimiter);
+	 */
 	const idWithDelimiter =
 		// (OW ? OW : "") + //	@TODO: Document // "["
 		accountID +
@@ -117,8 +115,9 @@ export default function renameChildFiles({
 		DAK: DELIMITER_AFTER_KEY,
 		DIK: DELIMITER_IN_KEY,
 		FAN: fancyAccountNames,
-		globalMaxAccountNumberCount: globalMaxAccountNumberCount,
+		minAccountNumber,
 		OW,
-		CW
+		CW,
+		AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER
 	});
 }

@@ -19,9 +19,10 @@ interface IGenerateAccountID {
 	DAK: string;
 	DIK: string;
 	FAN: boolean;
-	globalMaxAccountNumberCount: number;
+	minAccountNumber: number;
 	OW?: string;
 	CW?: string;
+	AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER: number;
 }
 
 /**
@@ -40,16 +41,18 @@ export default function generateAccountID({
 	DAK,
 	DIK,
 	FAN,
-	globalMaxAccountNumberCount,
+	minAccountNumber,
 	OW,
-	CW
+	CW,
+	AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER
 }: IGenerateAccountID): string {
+	if (OW) OW = OW.replace(/\\/gim, "");
+	//	Remove all character escapes because this keeps breaking.
+	else OW = "";
 
-	if (OW) OW = OW.replace(/\\/gim, ""); //	Remove all character escapes because this keeps breaking.
-	else OW = ""
-
-	if (CW) CW = CW.replace(/\\/gim, ""); //	Remove all character escapes because this keeps breaking.
-	else CW = ""
+	if (CW) CW = CW.replace(/\\/gim, "");
+	//	Remove all character escapes because this keeps breaking.
+	else CW = "";
 
 	const folderName = accountFolder.getName();
 	console.log(`Generating account ID for '${folderName}'`);
@@ -57,17 +60,16 @@ export default function generateAccountID({
 
 	const highestAccountNumber = incrementAccountNumber({
 		siblingFolders: accountFolders,
-		globalMaxAccountNumberCount
+		minAccountNumber
 	});
 
-	const paddedNumber = pad(highestAccountNumber, 4);
+	const paddedNumber = pad(
+		highestAccountNumber,
+		AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER
+	);
 
 	const RENDER = FAN
-		? OW +
-		  paddedNumber +
-		  CW +
-		  DIK +
-		  shorthandAccountName.toUpperCase()
+		? OW + paddedNumber + DIK + shorthandAccountName.toUpperCase() + CW
 		: paddedNumber;
 
 	if (RPE) {

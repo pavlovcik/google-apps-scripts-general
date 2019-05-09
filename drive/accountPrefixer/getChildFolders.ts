@@ -9,9 +9,10 @@ interface IGetChildFolders {
 	DAK: string;
 	DIK: string;
 	FAN: boolean;
-	globalMaxAccountNumberCount: number;
+	minAccountNumber: number;
 	OW: string;
 	CW: string;
+	AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER: number;
 }
 
 /**
@@ -24,7 +25,7 @@ interface IGetChildFolders {
  * @param DAK DELIMITER_AFTER_KEY - Character to separate the account ID and the account name.
  * @param DIK DELIMITER_IN_KEY - Character to separate the account number and the account shorthand name within the account ID.
  * @param FAN fancyAccountNames - Enables account shorthand name in account ID.
- * @param globalMaxAccountNumberCount Attempts to keep track of the highest account number counted.
+ * @param minAccountNumber Start the count at this number. Normally should be 0
  *
  * @export
  *
@@ -36,7 +37,7 @@ interface IGetChildFolders {
  * 	DAK,
  * 	DIK,
  * 	FAN,
- * 	globalMaxAccountNumberCount
+ * 	minAccountNumber
  * }
  */
 export default function getChildFolders({
@@ -47,9 +48,10 @@ export default function getChildFolders({
 	DAK,
 	DIK,
 	FAN,
-	globalMaxAccountNumberCount,
+	minAccountNumber,
 	OW,
-	CW
+	CW,
+	AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER
 }: IGetChildFolders): void {
 	const accountFolders = rootFolder.getFolders();
 	const accountFoldersFreshIterator = rootFolder.getFolders(); //  Needs to be a fresh iterator for generating an account ID
@@ -87,9 +89,9 @@ export default function getChildFolders({
 			console.log(`Has an account ID '${accountID}'  in the parent folder.`);
 		} else {
 			// Does not have an account ID
-			console.log(
-				`Does not have an account id... what is the value of registeredAccountID: ${registeredAccountID}`
-			);
+			// console.log(
+			// 	`Does not have an account id... what is the value of registeredAccountID: ${registeredAccountID}`
+			// );
 			accountID =
 				registeredAccountID ||
 				generateAccountID({
@@ -99,16 +101,18 @@ export default function getChildFolders({
 					DAK,
 					DIK,
 					FAN,
-					globalMaxAccountNumberCount,
+					minAccountNumber,
 					OW,
-					CW
+					CW,
+					AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER
 				});
 		}
-		const isNullAccount = new RegExp("0{4}" + DIK).test(accountID); //	"0{4}" four zeros, and before delimiter in key
+		const isNullAccount = new RegExp(`0{${AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER}}` + DIK).test(accountID); //	"0{4}" variable zeros, and before delimiter in key
 		if (isNullAccount) {
 			//  Do not rename child files if null account `0000`
-			console.log(`Ignored because account number 0000.`);
+			console.log(`Ignored because account number signifies null e.g. "0000".`);
 		} else {
+
 			renameChildFiles({
 				accountFolder,
 				accountID,
@@ -117,9 +121,10 @@ export default function getChildFolders({
 				DELIMITER_AFTER_KEY: DAK,
 				DELIMITER_IN_KEY: DIK,
 				fancyAccountNames: FAN,
-				globalMaxAccountNumberCount,
+				minAccountNumber,
 				OW,
-				CW
+				CW,
+				AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER
 			});
 		}
 	}

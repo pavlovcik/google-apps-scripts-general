@@ -10,7 +10,7 @@
  */
 export interface IIncrementAccountNumber {
 	siblingFolders: GoogleAppsScript.Drive.FolderIterator;
-	globalMaxAccountNumberCount: number;
+	minAccountNumber: number;
 }
 
 /**
@@ -22,7 +22,7 @@ export interface IIncrementAccountNumber {
  */
 export default function incrementAccountNumber({
 	siblingFolders,
-	globalMaxAccountNumberCount
+	minAccountNumber
 }: IIncrementAccountNumber): number {
 	const parsed: number[] = [];
 
@@ -39,7 +39,7 @@ export default function incrementAccountNumber({
 		}
 	}
 
-	if (globalMaxAccountNumberCount) parsed.push(globalMaxAccountNumberCount); //	Important to include from earlier searches...although this will yield the same account number for two accounts with no numbers!!!
+	if (minAccountNumber) parsed.push(minAccountNumber); //	Important to include from earlier searches...although this will yield the same account number for two accounts with no numbers!!!
 	parsed.sort((a, b) => a - b);
 	if (parsed.length) return parsed.pop() + 1;
 	else return 0;
