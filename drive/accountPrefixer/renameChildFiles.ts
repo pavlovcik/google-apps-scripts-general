@@ -1,34 +1,33 @@
 import getChildFolders from "./getChildFolders";
 
+interface IRenameChildFiles {
+	accountFolder: GoogleAppsScript.Drive.Folder;
+	accountID: string;
+	REGEX_FOR_PREFIX: RegExp;
+	RENAME_PERMISSIONS_ENABLED: boolean;
+	DELIMITER_AFTER_KEY: string;
+	DELIMITER_IN_KEY: string;
+	fancyAccountNames: boolean;
+	globalMaxAccountNumberCount: number;
+}
+
 /**
- * Renames child files recursively.
- * @param cwd Current Working Directory.
- * @param accountID Set account ID.
- * @param REGEX_FOR_PREFIX Recognized pattern for account IDs.
- * @param RENAME_PERMISSIONS_ENABLED Permissions to make persisting changes to Drive.
- * @param DELIMITER_AFTER_KEY What seperates the account ID with the account name.
- * @param DELIMITER_IN_KEY
- * @param fancyAccountNames
+ * Renames files recursively
+ *
+ * @export
+ * @param {IRenameChildFiles}
  */
-export default function renameChildFiles(
-	cwd: GoogleAppsScript.Drive.Folder,
-	accountID: string,
-	REGEX_FOR_PREFIX: RegExp,
-	RENAME_PERMISSIONS_ENABLED: boolean,
-	DELIMITER_AFTER_KEY: string,
-	DELIMITER_IN_KEY: string,
-	fancyAccountNames: boolean,
-	globalMaxAccountNumberCount: number
-) {
-
-	// if (accountID) console.log(
-	// 		`Account ID has been set for '${cwd.getName()}' (so name generation should not happen!)`
-	// 	);
-	// else console.log(
-	// 		`Account ID has NOT been set for '${cwd.getName()}' (so name generation should happen!)`
-	// 	);
-
-	const selectedFolderChildFiles = cwd.getFiles();
+export default function renameChildFiles({
+	accountFolder,
+	accountID,
+	REGEX_FOR_PREFIX,
+	RENAME_PERMISSIONS_ENABLED,
+	DELIMITER_AFTER_KEY,
+	DELIMITER_IN_KEY,
+	fancyAccountNames,
+	globalMaxAccountNumberCount
+}: IRenameChildFiles) {
+	const selectedFolderChildFiles = accountFolder.getFiles();
 	const idWithDelimiter = accountID + DELIMITER_AFTER_KEY;
 
 	while (selectedFolderChildFiles.hasNext()) {
@@ -61,8 +60,7 @@ export default function renameChildFiles(
 					The file to be renamed is '${childFileName}' because it is incorrectly prefixed.
 					The expected name is '${expectedName}'
 					(idWithDelimiter: '${idWithDelimiter}'  + accountName: '${accountFolderName}')
-					`
-				);
+					`);
 				if (RENAME_PERMISSIONS_ENABLED) {
 					childFile.setName(expectedName);
 				}
@@ -72,14 +70,14 @@ export default function renameChildFiles(
 		}
 	}
 
-	getChildFolders(
-		cwd,
-		accountID,
-		REGEX_FOR_PREFIX,
-		RENAME_PERMISSIONS_ENABLED,
-		DELIMITER_AFTER_KEY,
-		DELIMITER_IN_KEY,
-		fancyAccountNames,
-		globalMaxAccountNumberCount
-	);
+	getChildFolders({
+		rootFolder: accountFolder,
+		registeredAccountID: accountID,
+		RFP: REGEX_FOR_PREFIX,
+		RPE: RENAME_PERMISSIONS_ENABLED,
+		DAK: DELIMITER_AFTER_KEY,
+		DIK: DELIMITER_IN_KEY,
+		FAN: fancyAccountNames,
+		globalMaxAccountNumberCount: globalMaxAccountNumberCount
+	});
 }

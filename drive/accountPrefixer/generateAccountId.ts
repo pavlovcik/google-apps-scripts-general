@@ -1,61 +1,53 @@
 import "google-apps-script";
 import incrementAccountNumber from "./incrementAccountNumber";
+/**
+ *
+ * @interface IGenerateAccountID
+ *
+ * @param {GoogleAppsScript.Drive.Folder} accountFolder Current working directory.
+ * @param {GoogleAppsScript.Drive.FolderIterator} accountFolders Sibling folders.
+ * @param {boolean} RFP REGEX_FOR_PREFIX - Regular expression used to parse the account ID. This can be for either normal or fancy mode.
+ * @param {string} RPE RENAME_PERMISSIONS_ENABLED - Empowers the software to make persisting changes to disk (Drive).
+ * @param {string} DAK DELIMITER_AFTER_KEY - Character to separate the account ID and the account name.
+ * @param {boolean} DIK DELIMITER_IN_KEY - Character to separate the account number and the account shorthand name within the account ID.
+ * @param {number} FAN fancyAccountNames - Enables account shorthand name in account ID.
+ */
+interface IGenerateAccountID {
+	accountFolder: GoogleAppsScript.Drive.Folder;
+	accountFolders: GoogleAppsScript.Drive.FolderIterator;
+	RPE: boolean;
+	DAK: string;
+	DIK: string;
+	FAN: boolean;
+	globalMaxAccountNumberCount: number;
+}
 
 /**
+ *
  * @description Generates an account ID
  * @author Alexander Pavlovcik
  *
- * @param accountFolder Current working directory.
- * @param accountFolders Sibling folders.
- * @param RFP REGEX_FOR_PREFIX - Regular expression used to parse the account ID. This can be for either normal or fancy mode.
- * @param RPE RENAME_PERMISSIONS_ENABLED - Empowers the software to make persisting changes to disk (Drive).
- * @param DAK DELIMITER_AFTER_KEY - Character to separate the account ID and the account name.
- * @param DIK DELIMITER_IN_KEY - Character to separate the account number and the account shorthand name within the account ID.
- * @param FAN fancyAccountNames - Enables account shorthand name in account ID.
- * globalMaxAccountNumberCount
- *
+ * @export
+ * @param {IGenerateAccountID}
  * @returns {string} A generated account id.
  */
-export default function generateAccountID(
-	accountFolder: GoogleAppsScript.Drive.Folder,
-	accountFolders: GoogleAppsScript.Drive.FolderIterator,
-	RFP: RegExp,
-	RPE: boolean,
-	DAK: string,
-	DIK: string,
-	FAN: boolean,
-	// accountFoldersFreshIterator2: GoogleAppsScript.Drive.FolderIterator // @TODO: add to definition
-	globalMaxAccountNumberCount: number
-): string {
+export default function generateAccountID({
+	accountFolder,
+	accountFolders,
+	RPE,
+	DAK,
+	DIK,
+	FAN,
+	globalMaxAccountNumberCount
+}: IGenerateAccountID): string {
 	const folderName = accountFolder.getName();
 	console.log(`Generating account ID for '${folderName}'`);
-
 	let shorthandAccountName: string = generateShorthandAccountName(folderName);
-
-
-
-/**
- *  Handle logic for highest account number in a special manner because
- * Google Apps Scripts shares variable memory in a very strange manner.
- *
- * Basically this requires a manual verification before clobbering the value.
- */
 
 	const highestAccountNumber = incrementAccountNumber({
 		siblingFolders: accountFolders,
 		globalMaxAccountNumberCount
-		// siblingFoldersCLONE: accountFoldersFreshIterator2
-		// RFP,
-		// DAK,
-		// DIK,
-		// FAN
 	});
-
-	console.log(`
-
-	highestAccountNumber: ${highestAccountNumber}
-	globalMaxAccountNumberCount: ${globalMaxAccountNumberCount}
-	`);
 
 	const paddedNumber = pad(highestAccountNumber, 4);
 
@@ -63,18 +55,6 @@ export default function generateAccountID(
 		? paddedNumber + DIK + shorthandAccountName.toUpperCase()
 		: paddedNumber;
 
-	console.log(`Rendered account ID: ${RENDER}`);
-	console.log(`
-
-    paddedNumber: '${paddedNumber}';
-    DELIMITER_AFTER_KEY: '${DAK}';
-    folderName: '${folderName}'
-
-    `);
-
-	console.log(
-		`The folder '${folderName}' will be renamed because it lacks an account ID.`
-	);
 	if (RPE) {
 		let accountFolderName: string;
 		if (FAN) {
@@ -144,17 +124,11 @@ export default function generateAccountID(
 	 */
 	function truncate(string: string) {
 		const length = string.length;
-
 		if (length >= 5) {
-			// console.log({ preTruncated: string });
 			const truncated =
 				string.slice(0, length - 2) + string.slice(length - 1, string.length);
-			// console.log({ truncated });
-
 			return truncate(truncated);
 		} else {
-			// console.log({ caps: string });
-
 			return string;
 		}
 	}
@@ -174,8 +148,6 @@ export default function generateAccountID(
 			if (notCapitalized) {
 				extracted = firstLetter.toUpperCase().concat(extracted);
 			}
-
-			// console.log(caps);
 
 			if (extracted.length >= 1) return extracted;
 		}

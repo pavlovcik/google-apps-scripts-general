@@ -1,15 +1,25 @@
 import "google-apps-script";
 import getChildFolders from "./getChildFolders";
-const RENAME_PERMISSIONS_ENABLED = true;
+const RENAME_PERMISSIONS_ENABLED = false;
 
-const DELIMITER_AFTER_KEY = ` `;
-const DELIMITER_IN_KEY = `-`; //  Between account ID and name. e.g. `0001 Inventum Digital, Inc.`
+// KEY refers to Account Identifier, which can be either
+// FANCY MODE e.g. source folder name: `Inventum Digital` converts to `0086-ID Inventum Digital`
+// NORMAL MODE e.g. `Inventum Digital` converts to `0086 Inventum Digital`
+const DELIMITER_AFTER_KEY = ` `; //  Seperator between Account Identifier, and Account Name. e.g. `1234-ID Inventum Digital`
+const DELIMITER_IN_KEY = `-`; //	Only in FANCY mode, what seperates the account number from account shorthand within the Account Identifier
 
-let REGEX_FOR_PREFIX_NUMERIC = new RegExp(`^[0-9]{4}` + DELIMITER_AFTER_KEY); //  Numbers with a delimiter in front e.g. `0001 `
+const OPEN_WRAPPER = `[`; //	Wrapper symbol to denote ends of Account Identifier e.g. `[1234-ID] Inventum Digital`
+const CLOSE_WRAPPER = `]`;
+
+let REGEX_FOR_PREFIX_NUMERIC = new RegExp(`^[0-9]{4}` + DELIMITER_AFTER_KEY); //  NORMAL Account Identification parser. NUMBERS only.
 let REGEX_FOR_PREFIX_ALPHANUMERIC = new RegExp(
-	`[0-9]{4}` + DELIMITER_IN_KEY + `[0-9A-Za-z]{1,4}` + DELIMITER_AFTER_KEY
-); //  Capital letters or numbers with a delimiter in front e.g. `0001-ABXY  `
-
+	OPEN_WRAPPER +
+		`[0-9]{4}` +
+		DELIMITER_IN_KEY +
+		`[0-9A-Za-z]{1,4}` +
+		CLOSE_WRAPPER +
+		DELIMITER_AFTER_KEY
+); //  FANCY Account Identification parser. ALPHANUMERIC.
 
 const FOLDERS = {
 	test: `1pFbF1sisQlHs9OatzuRAcXGSwg47Gb8X`
@@ -17,7 +27,7 @@ const FOLDERS = {
 	// inventum: `0B3hiA5zCI0EDcEcxbnY0anMyLU0`
 };
 
-let fancyAccountNames = false; //	This would include the numerical prefix, along with the shortened text e.g. `Inventum Digital` >> `0086-ID Inventum Digital`
+let fancyAccountNames = false;
 let globalMaxAccountNumberCount = 0;
 /**
  * The Steadfast Appropriator ensures that project files are prefixed with their account ID.
@@ -36,25 +46,17 @@ function SteadfastAppropriator() {
 	// console.log(`===== folders.personal =====`);
 	// getFolderTree(folders.personal);
 	console.log(`===== folders.test =====`);
-	crawlFolderTree(FOLDERS.test);
-	console.log(`===== EXECUTION COMPLETE =====`);
-}
-
-/**
- * Crawls a folder's tree
- * @param folderId
- */
-function crawlFolderTree(folderId: string) {
-	return getChildFolders(
-		DriveApp.getFolderById(folderId),
-		void 0,
-		fancyAccountNames
+	return getChildFolders({
+		rootFolder: DriveApp.getFolderById(FOLDERS.test),
+		// registeredAccountID:	 void 0,
+		RFP: fancyAccountNames
 			? REGEX_FOR_PREFIX_ALPHANUMERIC
 			: REGEX_FOR_PREFIX_NUMERIC,
-		RENAME_PERMISSIONS_ENABLED,
-		DELIMITER_AFTER_KEY,
-		DELIMITER_IN_KEY,
-		fancyAccountNames,
+		RPE: RENAME_PERMISSIONS_ENABLED,
+		DAK: DELIMITER_AFTER_KEY,
+		DIK: DELIMITER_IN_KEY,
+		FAN: fancyAccountNames,
 		globalMaxAccountNumberCount
-	);
+	});
+	console.log(`===== EXECUTION COMPLETE =====`);
 }
