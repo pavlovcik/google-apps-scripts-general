@@ -20,7 +20,7 @@ export default function incrementAccountNumber({
 		const currentFolder = siblingFolders.next();
 		const currentFolderName = currentFolder.getName();
 
-		let parsedAccounts = currentFolderName.match(/^[0-9]+/); //  Parse continuous string of numbers from beginning
+		let parsedAccounts = currentFolderName.match(/[0-9]+/); //  Parse first instance of continuous string of numbers
 
 		if (parsedAccounts) {
 			//	Regex array!
@@ -29,7 +29,7 @@ export default function incrementAccountNumber({
 		}
 	}
 
-	if (minAccountNumber) parsed.push(minAccountNumber); //	Important to include from earlier searches...although this will yield the same account number for two accounts with no numbers!!!
+	if (minAccountNumber) parsed.push(minAccountNumber); //	Important to include from earlier searches...@TODO: although this will yield the same account number for two accounts with no numbers!!!
 	parsed.sort((a, b) => a - b);
 	if (parsed.length) return parsed.pop() + 1;
 	else return 0;
