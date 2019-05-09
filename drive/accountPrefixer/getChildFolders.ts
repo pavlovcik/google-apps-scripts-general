@@ -10,6 +10,8 @@ interface IGetChildFolders {
 	DIK: string;
 	FAN: boolean;
 	globalMaxAccountNumberCount: number;
+	OW: string;
+	CW: string;
 }
 
 /**
@@ -45,7 +47,9 @@ export default function getChildFolders({
 	DAK,
 	DIK,
 	FAN,
-	globalMaxAccountNumberCount
+	globalMaxAccountNumberCount,
+	OW,
+	CW
 }: IGetChildFolders): void {
 	const accountFolders = rootFolder.getFolders();
 	const accountFoldersFreshIterator = rootFolder.getFolders(); //  Needs to be a fresh iterator for generating an account ID
@@ -56,6 +60,18 @@ export default function getChildFolders({
 		const matchesForAccountID = registeredAccountID
 			? registeredAccountID.match(RFP)
 			: folderName.match(RFP);
+
+		if (matchesForAccountID && matchesForAccountID[0]) {
+			var test = matchesForAccountID[0];
+		}
+
+		console.log(`
+
+		RFP: ${RFP}
+		matchesForAccountID[0]: ${test}
+		registeredAccountID: ${registeredAccountID}
+		`);
+
 		addressAccountPrefix(matchesForAccountID, accountFolder);
 	}
 
@@ -83,10 +99,12 @@ export default function getChildFolders({
 					DAK,
 					DIK,
 					FAN,
-					globalMaxAccountNumberCount
+					globalMaxAccountNumberCount,
+					OW,
+					CW
 				});
 		}
-		const isNullAccount = /^0000/.test(accountID);
+		const isNullAccount = new RegExp("0{4}" + DIK).test(accountID); //	"0{4}" four zeros, and before delimiter in key
 		if (isNullAccount) {
 			//  Do not rename child files if null account `0000`
 			console.log(`Ignored because account number 0000.`);
@@ -99,7 +117,9 @@ export default function getChildFolders({
 				DELIMITER_AFTER_KEY: DAK,
 				DELIMITER_IN_KEY: DIK,
 				fancyAccountNames: FAN,
-				globalMaxAccountNumberCount
+				globalMaxAccountNumberCount,
+				OW,
+				CW
 			});
 		}
 	}

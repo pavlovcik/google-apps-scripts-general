@@ -20,6 +20,8 @@ interface IGenerateAccountID {
 	DIK: string;
 	FAN: boolean;
 	globalMaxAccountNumberCount: number;
+	OW?: string;
+	CW?: string;
 }
 
 /**
@@ -38,8 +40,17 @@ export default function generateAccountID({
 	DAK,
 	DIK,
 	FAN,
-	globalMaxAccountNumberCount
+	globalMaxAccountNumberCount,
+	OW,
+	CW
 }: IGenerateAccountID): string {
+
+	if (OW) OW = OW.replace(/\\/gim, ""); //	Remove all character escapes because this keeps breaking.
+	else OW = ""
+
+	if (CW) CW = CW.replace(/\\/gim, ""); //	Remove all character escapes because this keeps breaking.
+	else CW = ""
+
 	const folderName = accountFolder.getName();
 	console.log(`Generating account ID for '${folderName}'`);
 	let shorthandAccountName: string = generateShorthandAccountName(folderName);
@@ -52,16 +63,22 @@ export default function generateAccountID({
 	const paddedNumber = pad(highestAccountNumber, 4);
 
 	const RENDER = FAN
-		? paddedNumber + DIK + shorthandAccountName.toUpperCase()
+		? OW +
+		  paddedNumber +
+		  CW +
+		  DIK +
+		  shorthandAccountName.toUpperCase()
 		: paddedNumber;
 
 	if (RPE) {
 		let accountFolderName: string;
 		if (FAN) {
 			accountFolderName =
+				OW + //	@TODO: Document // "["
 				paddedNumber + //  "0000"
 				DIK + //  "-"
 				shorthandAccountName.toUpperCase() + //  "ID"
+				CW + //	@TODO: Document // "]"
 				DAK + //  " "
 				folderName; //  "Inventum Digital"
 		} else {

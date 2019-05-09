@@ -9,6 +9,8 @@ interface IRenameChildFiles {
 	DELIMITER_IN_KEY: string;
 	fancyAccountNames: boolean;
 	globalMaxAccountNumberCount: number;
+	OW?: string;
+	CW?: string;
 }
 
 /**
@@ -25,10 +27,47 @@ export default function renameChildFiles({
 	DELIMITER_AFTER_KEY,
 	DELIMITER_IN_KEY,
 	fancyAccountNames,
-	globalMaxAccountNumberCount
+	globalMaxAccountNumberCount,
+	OW,
+	CW
 }: IRenameChildFiles) {
 	const selectedFolderChildFiles = accountFolder.getFiles();
-	const idWithDelimiter = accountID + DELIMITER_AFTER_KEY;
+
+	console.log(`
+
+		BEFORE REPLACE
+		OW: '${OW}'
+		CW: '${CW}'
+`);
+
+	if (OW) OW = OW.replace(/\\/gim, "");
+	//	Remove all character escapes because this keeps breaking.
+	else OW = "";
+
+	if (CW) CW = CW.replace(/\\/gim, "");
+	//	Remove all character escapes because this keeps breaking.
+	else CW = "";
+
+	console.log(`
+
+		AFTER REPLACE
+		OW: '${OW}'
+		CW: '${CW}'
+`);
+
+	const idWithDelimiter =
+		// (OW ? OW : "") + //	@TODO: Document // "["
+		accountID +
+		// (CW ? CW : "") + //	@TODO: Document // "]"
+		DELIMITER_AFTER_KEY;
+
+	console.log(`
+
+		idWithDelimiter: '${idWithDelimiter}'
+		accountID: '${accountID}'
+		OW: '${OW}'
+		CW: '${CW}'
+`);
 
 	while (selectedFolderChildFiles.hasNext()) {
 		const childFile = selectedFolderChildFiles.next();
@@ -78,6 +117,8 @@ export default function renameChildFiles({
 		DAK: DELIMITER_AFTER_KEY,
 		DIK: DELIMITER_IN_KEY,
 		FAN: fancyAccountNames,
-		globalMaxAccountNumberCount: globalMaxAccountNumberCount
+		globalMaxAccountNumberCount: globalMaxAccountNumberCount,
+		OW,
+		CW
 	});
 }
