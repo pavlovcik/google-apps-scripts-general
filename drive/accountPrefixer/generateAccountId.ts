@@ -6,23 +6,22 @@ import incrementAccountNumber from "./incrementAccountNumber";
  *
  * @param {GoogleAppsScript.Drive.Folder} accountFolder Current working directory.
  * @param {GoogleAppsScript.Drive.FolderIterator} accountFolders Sibling folders.
- * @param {boolean} RFP REGEX_FOR_PREFIX - Regular expression used to parse the account ID. This can be for either normal or fancy mode.
- * @param {string} RPE RENAME_PERMISSIONS_ENABLED - Empowers the software to make persisting changes to disk (Drive).
- * @param {string} DAK DELIMITER_AFTER_KEY - Character to separate the account ID and the account name.
- * @param {boolean} DIK DELIMITER_IN_KEY - Character to separate the account number and the account shorthand name within the account ID.
- * @param {number} FAN fancyAccountNames - Enables account shorthand name in account ID.
+ * @param {string} writePermissions writePermissionsEnabled - Empowers the software to make persisting changes to disk (Drive).
+ * @param {string} afterID delimiterAfterID - Character to separate the account ID and the account name.
+ * @param {boolean} inID delimiterInID - Character to separate the account number and the account shorthand name within the account ID.
+ * @param {number} shorthandAccountNames shorthandAccountNameSupport - Enables account shorthand name in account ID.
  */
-interface IGenerateAccountID {
+export interface IGenerateAccountID {
 	accountFolder: GoogleAppsScript.Drive.Folder;
 	accountFolders: GoogleAppsScript.Drive.FolderIterator;
-	RPE: boolean;
-	DAK: string;
-	DIK: string;
-	FAN: boolean;
+	writePermissions: boolean;
+	afterID: string;
+	inID: string;
+	shorthandAccountNames: boolean;
 	minAccountNumber: number;
-	OW?: string;
-	CW?: string;
-	AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER: number;
+	openID?: string;
+	closeID?: string;
+	accountNumberLength: number;
 }
 
 /**
@@ -37,22 +36,22 @@ interface IGenerateAccountID {
 export default function generateAccountID({
 	accountFolder,
 	accountFolders,
-	RPE,
-	DAK,
-	DIK,
-	FAN,
+	writePermissions,
+	afterID,
+	inID,
+	shorthandAccountNames,
 	minAccountNumber,
-	OW,
-	CW,
-	AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER
+	openID,
+	closeID,
+	accountNumberLength
 }: IGenerateAccountID): string {
-	if (OW) OW = OW.replace(/\\/gim, "");
+	if (openID) openID = openID.replace(/\\/gim, "");
 	//	Remove all character escapes because this keeps breaking.
-	else OW = "";
+	else openID = "";
 
-	if (CW) CW = CW.replace(/\\/gim, "");
+	if (closeID) closeID = closeID.replace(/\\/gim, "");
 	//	Remove all character escapes because this keeps breaking.
-	else CW = "";
+	else closeID = "";
 
 	const folderName = accountFolder.getName();
 	console.log(`Generating account ID for '${folderName}'`);
@@ -63,30 +62,31 @@ export default function generateAccountID({
 		minAccountNumber
 	});
 
-	const paddedNumber = pad(
-		highestAccountNumber,
-		AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER
-	);
+	const paddedNumber = pad(highestAccountNumber, accountNumberLength);
 
-	const RENDER = FAN
-		? OW + paddedNumber + DIK + shorthandAccountName.toUpperCase() + CW
+	const RENDER = shorthandAccountNames
+		? openID +
+		  paddedNumber +
+		  inID +
+		  shorthandAccountName.toUpperCase() +
+		  closeID
 		: paddedNumber;
 
-	if (RPE) {
+	if (writePermissions) {
 		let accountFolderName: string;
-		if (FAN) {
+		if (shorthandAccountNames) {
 			accountFolderName =
-				OW + //	@TODO: Document // "["
+				openID + //	@TODO: Document // "["
 				paddedNumber + //  "0000"
-				DIK + //  "-"
+				inID + //  "-"
 				shorthandAccountName.toUpperCase() + //  "ID"
-				CW + //	@TODO: Document // "]"
-				DAK + //  " "
+				closeID + //	@TODO: Document // "]"
+				afterID + //  " "
 				folderName; //  "Inventum Digital"
 		} else {
 			accountFolderName =
 				paddedNumber + //  "0000"
-				DAK + //  " "
+				afterID + //  " "
 				folderName; //  "Inventum Digital"
 		}
 		accountFolder.setName(accountFolderName);

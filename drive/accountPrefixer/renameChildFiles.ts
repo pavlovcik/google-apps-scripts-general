@@ -1,17 +1,17 @@
 import getChildFolders from "./getChildFolders";
 
-interface IRenameChildFiles {
+export interface IRenameChildFiles {
 	accountFolder: GoogleAppsScript.Drive.Folder;
 	accountID?: string;
-	REGEX_FOR_PREFIX: RegExp;
-	RENAME_PERMISSIONS_ENABLED: boolean;
-	DELIMITER_AFTER_KEY: string;
-	DELIMITER_IN_KEY: string;
-	fancyAccountNames: boolean;
+	regexForAccountID: RegExp;
+	writePermissionsEnabled: boolean;
+	delimiterAfterID: string;
+	delimiterInID: string;
+	shorthandAccountNameSupport: boolean;
 	minAccountNumber: number;
-	OW?: string;
-	CW?: string;
-	AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER: number;
+	openID?: string;
+	closeID?: string;
+	accountNumberLength: number;
 }
 
 /**
@@ -23,101 +23,106 @@ interface IRenameChildFiles {
 export default function renameChildFiles({
 	accountFolder,
 	accountID,
-	REGEX_FOR_PREFIX,
-	RENAME_PERMISSIONS_ENABLED,
-	DELIMITER_AFTER_KEY,
-	DELIMITER_IN_KEY,
-	fancyAccountNames,
+	regexForAccountID,
+	writePermissionsEnabled,
+	delimiterAfterID,
+	delimiterInID,
+	shorthandAccountNameSupport,
 	minAccountNumber,
-	OW,
-	CW,
-	AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER
+	openID,
+	closeID,
+	accountNumberLength
 }: IRenameChildFiles) {
 	const selectedFolderChildFiles = accountFolder.getFiles();
 
-	if (OW) OW = OW.replace(/\\/gim, "");
+	if (openID) openID = openID.replace(/\\/gim, "");
 	//	Remove all character escapes because this keeps breaking.
-	else OW = "";
+	else openID = "";
 
-	if (CW) CW = CW.replace(/\\/gim, "");
+	if (closeID) closeID = closeID.replace(/\\/gim, "");
 	//	Remove all character escapes because this keeps breaking.
-	else CW = "";
+	else closeID = "";
 
-	/**
-			idWithDelimiter =
-				OW + //	@TODO: Document // "["
-				paddedNumber + //  "0000"
-				DIK + //  "-"
-				shorthandAccountName.toUpperCase() + //  "ID"
-				CW + //	@TODO: Document // "]"
-				DAK + //  " "
-		accountFolder.setName(idWithDelimiter);
-	 */
-	const idWithDelimiter =
-		// (OW ? OW : "") + //	@TODO: Document // "["
-		accountID +
-		// (CW ? CW : "") + //	@TODO: Document // "]"
-		DELIMITER_AFTER_KEY;
+	const idWithDelimiter = accountID + delimiterAfterID;
 
 	console.log(`
 
 		idWithDelimiter: '${idWithDelimiter}'
 		accountID: '${accountID}'
-		OW: '${OW}'
-		CW: '${CW}'
+		openID: '${openID}'
+		closeID: '${closeID}'
 `);
 
-	while (selectedFolderChildFiles.hasNext()) {
-		const childFile = selectedFolderChildFiles.next();
-		const childFileName = childFile.getName();
-
-		if (!REGEX_FOR_PREFIX.test(childFileName)) {
-			//  If the name of the FILE isn't prefixed.
-			console.log(
-				`The file to be renamed is '${childFileName}' because it lacks a prefix.`
-			);
-			try {
-				//  Requires permissions to rename.
-				console.log(
-					`Adding the prefix '${idWithDelimiter}' to filename '${childFileName}'.`
-				);
-				if (RENAME_PERMISSIONS_ENABLED) {
-					childFile.setName(idWithDelimiter + childFileName);
-				}
-			} catch (e) {
-				console.error(`Can not rename ` + childFileName + e);
-			}
-		} else {
-			const accountFolderName = childFileName.replace(REGEX_FOR_PREFIX, ``);
-			const expectedName = idWithDelimiter + accountFolderName;
-
-			if (childFileName != expectedName) {
-				console.log(`
-
-					The file to be renamed is '${childFileName}' because it is incorrectly prefixed.
-					The expected name is '${expectedName}'
-					(idWithDelimiter: '${idWithDelimiter}'  + accountName: '${accountFolderName}')
-					`);
-				if (RENAME_PERMISSIONS_ENABLED) {
-					childFile.setName(expectedName);
-				}
-			} else {
-				console.log(`The filename is OK of '${childFileName}'.`);
-			}
-		}
-	}
+	renameChildFilesCORE(
+		selectedFolderChildFiles,
+		regexForAccountID,
+		idWithDelimiter,
+		writePermissionsEnabled
+	);
 
 	getChildFolders({
 		rootFolder: accountFolder,
 		registeredAccountID: accountID,
-		RFP: REGEX_FOR_PREFIX,
-		RPE: RENAME_PERMISSIONS_ENABLED,
-		DAK: DELIMITER_AFTER_KEY,
-		DIK: DELIMITER_IN_KEY,
-		FAN: fancyAccountNames,
+		regex: regexForAccountID,
+		writePermissions: writePermissionsEnabled,
+		afterID: delimiterAfterID,
+		inID: delimiterInID,
+		shorthandAccountNames: shorthandAccountNameSupport,
 		minAccountNumber,
-		OW,
-		CW,
-		AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER
+		openID,
+		closeID,
+		accountNumberLength
 	});
+}
+function renameChildFilesCORE(
+	siblingFiles: GoogleAppsScript.Drive.FileIterator,
+	regexForAccountID: RegExp,
+	idWithDelimiter: string,
+	writePermissionsEnabled: boolean
+) {
+	while (siblingFiles.hasNext()) {
+		const currentFile = siblingFiles.next();
+		const currentFileName = currentFile.getName();
+
+		if (!regexForAccountID.test(currentFileName)) {
+			//  If the name of the FILE isn't prefixed.
+			console.log(
+				`The file to be renamed is '${currentFileName}' because it lacks a prefix.`
+			);
+			try {
+				//  Requires permissions to rename.
+				console.log(
+					`Adding the prefix '${idWithDelimiter}' to filename '${currentFileName}'.`
+				);
+				if (writePermissionsEnabled) {
+					currentFile.setName(idWithDelimiter + currentFileName);
+				}
+			} catch (e) {
+				console.error(`Can not rename ` + currentFileName + e);
+			}
+		} else {
+			// Filename is prefixed incorrectly
+
+			const currentFileNameWithoutID = currentFileName.replace(
+				regexForAccountID,
+				``
+			);
+			const correctedName = idWithDelimiter + currentFileNameWithoutID;
+
+			if (currentFileName != correctedName) {
+				console.log(`
+
+					The file to be renamed is '${currentFileName}' because it is incorrectly prefixed.
+					The expected name is '${correctedName}'
+					(idWithDelimiter: '${idWithDelimiter}'  + accountName: '${currentFileNameWithoutID}')
+					`);
+
+				if (writePermissionsEnabled) {
+					currentFile.setName(correctedName);
+				}
+			} else {
+				console.log(`The filename is OK of '${currentFileName}'.`);
+			}
+		}
+	}
 }

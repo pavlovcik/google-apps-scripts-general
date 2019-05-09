@@ -1,13 +1,3 @@
-/**
- *
- * @export
- * @interface IIncrementAccountNumber
- * @param {GoogleAppsScript.Drive.FolderIterator} siblingFolders
- * @param {RegExp} RFP REGEX_FOR_PREFIX - Regular expression used to parse the account ID. This can be for either normal or fancy mode.
- * @param {string} DAK DELIMITER_AFTER_KEY - Character to separate the account ID and the account name.
- * @param {string} DIK DELIMITER_IN_KEY - Character to separate the account number and the account shorthand name within the account ID.
- * @param {boolean} FAN fancyAccountNames - Enables account shorthand name in account ID.
- */
 export interface IIncrementAccountNumber {
 	siblingFolders: GoogleAppsScript.Drive.FolderIterator;
 	minAccountNumber: number;
@@ -17,7 +7,7 @@ export interface IIncrementAccountNumber {
  * Increments account numbers based on the highest account number in the root directory.
  * This will return a 0 if no value was derived.
  *
- * @param {IIncrementAccountNumber} { siblingFolders, siblingFoldersCLONE, RFP, DAK, DIK, FAN }
+ * @param {IIncrementAccountNumber} { siblingFolders, siblingFoldersCLONE, regex, afterID, inID, shorthandAccountNames }
  * @returns {number} The highest account number in without padded zeros e.g. <number>80 for <string>"0080"
  */
 export default function incrementAccountNumber({

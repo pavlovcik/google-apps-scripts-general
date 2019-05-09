@@ -2,15 +2,15 @@ import generateAccountID from "./generateAccountID";
 
 /**
  * @param {string} folderId
- * @param {RegExp} REGEX_FOR_PREFIX
+ * @param {RegExp} regexForAccountID
  */
 export default function handleUnprefixedAccounts(
     folderId: string,
-    REGEX_FOR_PREFIX: RegExp,
-    RENAME_PERMISSIONS_ENABLED: boolean,
-    DELIMITER_AFTER_KEY: string,
-    DELIMITER_IN_KEY: string,
-    fancyAccountNames: boolean
+    regexForAccountID: RegExp,
+    writePermissionsEnabled: boolean,
+    delimiterAfterID: string,
+    delimiterInID: string,
+    shorthandAccountNameSupport: boolean
 ) {
     const watchDirectory = DriveApp.getFolderById(folderId);
     const childFolders = watchDirectory.getFolders();
@@ -18,22 +18,22 @@ export default function handleUnprefixedAccounts(
     while (childFolders.hasNext()) {
         const childFolder = childFolders.next();
         const childFolderName = childFolder.getName();
-        const parsingAccountID = childFolderName.match(REGEX_FOR_PREFIX);
+        const parsingAccountID = childFolderName.match(regexForAccountID);
 
         if (!parsingAccountID) {
             // Means that there's no name for the parent folder ... time to generate one?
             const accountID = generateAccountID(
                 childFolder,
                 childFolders,
-                REGEX_FOR_PREFIX,
-                RENAME_PERMISSIONS_ENABLED,
-                DELIMITER_AFTER_KEY,
-                DELIMITER_IN_KEY,
-                fancyAccountNames,
+                regexForAccountID,
+                writePermissionsEnabled,
+                delimiterAfterID,
+                delimiterInID,
+                shorthandAccountNameSupport,
                 void 0
             );
             console.log(`GENERATED ACCOUNT ID: ${accountID}`);
-            if (RENAME_PERMISSIONS_ENABLED) childFolder.setName(accountID + DELIMITER_AFTER_KEY + childFolder.getName());
+            if (writePermissionsEnabled) childFolder.setName(accountID + delimiterAfterID + childFolder.getName());
         }
     }
 }

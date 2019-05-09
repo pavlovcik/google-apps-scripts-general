@@ -2,34 +2,26 @@ import "google-apps-script";
 import getChildFolders from "./getChildFolders";
 import {
 	FOLDERS,
-	RENAME_PERMISSIONS_ENABLED,
-	DELIMITER_AFTER_KEY,
-	DELIMITER_IN_KEY,
-	AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER,
-	OPEN_WRAPPER,
-	CLOSE_WRAPPER,
+	writePermissionsEnabled,
+	delimiterAfterID,
+	delimiterInID,
+	accountNumberLength,
+	openID,
+	closeID,
 	minAccountNumber,
-	fancyAccountNames
+	shorthandAccountNameSupport
 } from "./SETTINGS";
 
+let shorthandAccountNames = shorthandAccountNameSupport; //	Weird bug
 
-const REGEX_FOR_PREFIX_NUMERIC = new RegExp(
-	OPEN_WRAPPER +
-		`[0-9]{${AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER}}` +
-		CLOSE_WRAPPER +
-		DELIMITER_AFTER_KEY
-); //  NORMAL Account Identification parser. NUMBERS only.
-
-const REGEX_FOR_PREFIX_ALPHANUMERIC = new RegExp(
-	OPEN_WRAPPER +
-		`[0-9]{${AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER}}` +
-		DELIMITER_IN_KEY +
-		`\\w{1,4}` +
-		CLOSE_WRAPPER +
-		DELIMITER_AFTER_KEY
-); //  FANCY Account Identification parser. ALPHANUMERIC.
-
-let FAN = fancyAccountNames; //	Weird bug
+const regexForAccountID = new RegExp(
+	openID +
+		`[0-9]{${accountNumberLength}}` +
+		(shorthandAccountNames ? delimiterInID : ``) +
+		(shorthandAccountNames ? `\\w{1,4}` : ``) +
+		closeID +
+		delimiterAfterID
+);
 
 /**
  * The Steadfast Appropriator ensures that project files are prefixed with their account ID.
@@ -51,32 +43,48 @@ function SteadfastAppropriator() {
 	getChildFolders({
 		rootFolder: DriveApp.getFolderById(FOLDERS.TEST),
 		registeredAccountID: void 0,
-		RFP: FAN ? REGEX_FOR_PREFIX_ALPHANUMERIC : REGEX_FOR_PREFIX_NUMERIC,
-		RPE: RENAME_PERMISSIONS_ENABLED,
-		DAK: DELIMITER_AFTER_KEY,
-		DIK: DELIMITER_IN_KEY,
-		FAN: FAN,
+		regex: regexForAccountID,
+		writePermissions: writePermissionsEnabled,
+		afterID: delimiterAfterID,
+		inID: delimiterInID,
+		shorthandAccountNames: shorthandAccountNames,
 		minAccountNumber,
-		OW: OPEN_WRAPPER, // @TODO: document this all the way down the code.
-		CW: CLOSE_WRAPPER, // @TODO: document this all the way down the code.
-		AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER
+		openID: openID, // @TODO: document this all the way down the code.
+		closeID: closeID, // @TODO: document this all the way down the code.
+		accountNumberLength
 	});
 
 	console.log(`===== FOLDERS.CONFLUENCE =====`);
-	FAN = true;
+	shorthandAccountNames = true;
 	getChildFolders({
 		rootFolder: DriveApp.getFolderById(FOLDERS.CONFLUENCE),
 		registeredAccountID: void 0,
-		RFP: FAN ? REGEX_FOR_PREFIX_ALPHANUMERIC : REGEX_FOR_PREFIX_NUMERIC,
-		RPE: RENAME_PERMISSIONS_ENABLED,
-		DAK: DELIMITER_AFTER_KEY,
-		DIK: DELIMITER_IN_KEY,
-		FAN: FAN,
+		regex: regexForAccountID,
+		writePermissions: writePermissionsEnabled,
+		afterID: delimiterAfterID,
+		inID: delimiterInID,
+		shorthandAccountNames: shorthandAccountNames,
 		minAccountNumber,
-		OW: OPEN_WRAPPER, // @TODO: document this all the way down the code.
-		CW: CLOSE_WRAPPER, // @TODO: document this all the way down the code.
-		AMOUNT_OF_DIGITS_IN_ACCOUNT_NUMBER
+		openID: openID, // @TODO: document this all the way down the code.
+		closeID: closeID, // @TODO: document this all the way down the code.
+		accountNumberLength
 	});
 
 	console.log(`===== EXECUTION COMPLETE =====`);
 }
+
+// const regexForAccountID_NUMERIC = new RegExp(
+// 	openID +
+// 		`[0-9]{${accountNumberLength}}` +
+// 		closeID +
+// 		delimiterAfterID
+// ); //  NORMAL Account Identification parser. NUMBERS only.
+
+// const regexForAccountID_ALPHANUMERIC = new RegExp(
+// 	openID +
+// 		`[0-9]{${accountNumberLength}}` +
+// 		delimiterInID +
+// 		`\\w{1,4}` +
+// 		closeID +
+// 		delimiterAfterID
+// ); //  shorthandAccountNamesCY Account Identification parser. ALPHANUMERIC.
