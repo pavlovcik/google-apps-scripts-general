@@ -22,14 +22,4 @@ let delimiterAfterID = ` `; //  Seperator between Account Identifier, and Accoun
 let shorthandAccountNameSupport = true;
 let minAccountNumber = 0;
 
-export {
-	FOLDERS,
-	writePermissionsEnabled,
-	openID,
-	delimiterInID,
-	accountNumberLength,
-	closeID,
-	delimiterAfterID,
-	shorthandAccountNameSupport,
-	minAccountNumber
-};
+export default { FOLDERS, writePermissionsEnabled, openID, delimiterInID, accountNumberLength, closeID, delimiterAfterID, shorthandAccountNameSupport, minAccountNumber };

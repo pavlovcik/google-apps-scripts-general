@@ -28,7 +28,7 @@ const regexForAccountID = new RegExp(
  * Aside from adding (or modifying existing) account IDs, it should be able to recognize client facing FOLDERS
  * And not rename those files, as the prefixes are not very pretty.
  *
- * @todo should be able to generate account IDs by removing vowels and prefixing
+ * @TODO: should be able to generate account IDs by removing vowels and prefixing
  * with the highest incremented integer, that is, if an account ID hasn't been already assigned.
  */
 
