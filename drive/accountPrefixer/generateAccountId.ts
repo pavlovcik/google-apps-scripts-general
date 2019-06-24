@@ -66,10 +66,10 @@ export default function generateAccountID({
 
 	const RENDER = shorthandAccountNames
 		? openID +
-		  paddedNumber +
-		  inID +
-		  shorthandAccountName.toUpperCase() +
-		  closeID
+		paddedNumber +
+		inID +
+		shorthandAccountName.toUpperCase() +
+		closeID
 		: paddedNumber;
 
 	if (writePermissions) {
@@ -84,10 +84,11 @@ export default function generateAccountID({
 				afterID + //  " "
 				folderName; //  "Inventum Digital"
 		} else {
-			accountFolderName =
+			accountFolderName = (
 				paddedNumber + //  "0000"
 				afterID + //  " "
-				folderName; //  "Inventum Digital"
+				folderName //  "Inventum Digital"
+			)
 		}
 		accountFolder.setName(accountFolderName);
 	}
@@ -96,17 +97,17 @@ export default function generateAccountID({
 
 	function generateShorthandAccountName(folderName: string): string {
 		const accountName = folderName;
-		const shortEnoughToSkip = folderName.length <= 4;
+		const shortEnoughToSkip = folderName.length <= (accountNumberLength);
 
 		let shorthandAccountName: string;
 		if (!shortEnoughToSkip) {
 			const accountNameCapitalLetters = extractCaps(accountName);
 			if (accountNameCapitalLetters.length <= 1) {
-				shorthandAccountName = removeVowels(accountName, 4);
+				shorthandAccountName = removeVowels(accountName, (accountNumberLength));
 			} else {
 				shorthandAccountName = accountNameCapitalLetters;
 			}
-			if (shorthandAccountName.length >= 5) {
+			if (shorthandAccountName.length >= (accountNumberLength + 1)) {
 				shorthandAccountName = truncate(shorthandAccountName);
 			}
 		} else {
@@ -124,28 +125,29 @@ export default function generateAccountID({
 	}
 
 	/**
-	 * @param {String} str
+	 * @param {String} input
 	 * @param {number} lessThan
 	 */
-	function removeVowels(str: string, lessThan: number): string {
-		if (str.length < lessThan) return str;
+	function removeVowels(input: string, lessThan: number): string {
+		let string = input.replace(/[^a-z|^A-Z]/igm, ""); // Letters only!
+		if (string.length < lessThan) return string;
 		const regex = /[aeiou\s]/g;
-		const strDead = str.replace(regex, ``);
+		const sansVowels = string.replace(regex, ``);
 
-		const firstLetterIsVowel = regex.test(str.charAt(0));
-		if (firstLetterIsVowel) return str.charAt(0) + strDead;
+		const firstLetterIsVowel = regex.test(string.charAt(0));
+		if (firstLetterIsVowel) return string.charAt(0) + sansVowels;
 
-		return strDead;
+		return sansVowels;
 	}
 
 	/**
 	 * @param {string} string
 	 */
-	function truncate(string: string) {
+	function truncate(input: string) {
+		let string = input.replace(/[^a-z|^A-Z]/igm, ""); // Letters only!
 		const length = string.length;
-		if (length >= 5) {
-			const truncated =
-				string.slice(0, length - 2) + string.slice(length - 1, string.length);
+		if (length >= (accountNumberLength + 1)) {
+			const truncated = string.slice(0, length - 2) + string.slice(length - 1, string.length);
 			return truncate(truncated);
 		} else {
 			return string;

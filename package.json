@@ -4,13 +4,15 @@
   "description": "My general Google Apps Scripts project.",
   "main": "index.js",
   "dependencies": {
-    "@types/google-apps-script": "0.0.46"
+    "@types/google-apps-script": "0.0.46",
+    "clone": "^2.1.2"
   },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "login": "clasp login --creds ./creds.json",
     "logs": "clasp logs --watch",
+    "login": "clasp login && clasp login --creds ./creds.json",
+    "logout": "clasp logout",
     "watch": "nodemon -x 'clasp push && clasp run SteadfastAppropriator'",
     "publish": "clasp deploy"
   },

@@ -109,7 +109,7 @@ export default function getChildFolders({
 				});
 		}
 		const isNullAccount = new RegExp(
-			`0{${accountNumberLength}}` +
+			`0+?` +
 				(shorthandAccountNameSupport ? inID : afterID)
 		).test(accountID); //	"0{?}" variable zeros, and before delimiter in key or after key if not fancy mode
 

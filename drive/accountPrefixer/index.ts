@@ -1,5 +1,7 @@
 import "google-apps-script";
 import getChildFolders from "./getChildFolders";
+import clone from "clone";
+
 import {
 	FOLDERS,
 	writePermissionsEnabled,
@@ -12,15 +14,13 @@ import {
 	shorthandAccountNameSupport
 } from "./SETTINGS";
 
-let shorthandAccountNames = shorthandAccountNameSupport; //	Weird bug
-
 const regexForAccountID = new RegExp(
 	openID +
-		`[0-9]{${accountNumberLength}}` +
-		(shorthandAccountNames ? delimiterInID : ``) +
-		(shorthandAccountNames ? `\\w{1,4}` : ``) +
-		closeID +
-		delimiterAfterID
+	`[0-9]+?` +
+	(shorthandAccountNameSupport ? delimiterInID : ``) +	//	If generating shorthand name, add delimiter, or else skip it.
+	(shorthandAccountNameSupport ? `\\w+?` : ``) +	//	Regex to look for the generated (alphabetical only) generated name.
+	closeID +
+	delimiterAfterID
 );
 
 /**
@@ -32,59 +32,32 @@ const regexForAccountID = new RegExp(
  * with the highest incremented integer, that is, if an account ID hasn't been already assigned.
  */
 
+let defaultSettings = {
+	rootFolder: null,
+	writePermissions: writePermissionsEnabled,
+	shorthandAccountNames: shorthandAccountNameSupport,
+	accountNumberLength,
+	// registeredAccountID: void 0,
+	regex: regexForAccountID,
+	openID: openID, // @TODO: document this all the way down the code.
+	inID: delimiterInID,
+	closeID: closeID, // @TODO: document this all the way down the code.
+	afterID: delimiterAfterID,
+	minAccountNumber
+};
+
 function SteadfastAppropriator() {
+
 	console.log(`===== EXECUTION BEGIN =====`);
-	// console.log(`===== FOLDERS.inventum =====`);
-	// getFolderTree(FOLDERS.inventum);
-	// console.log(`===== FOLDERS.personal =====`);
-	// getFolderTree(FOLDERS.personal);
-	console.log(`===== FOLDERS.TEST =====`);
+	let settings = {
+		personalConsulting: clone(defaultSettings)
+	};
 
-	getChildFolders({
-		rootFolder: DriveApp.getFolderById(FOLDERS.TEST),
-		registeredAccountID: void 0,
-		regex: regexForAccountID,
-		writePermissions: writePermissionsEnabled,
-		afterID: delimiterAfterID,
-		inID: delimiterInID,
-		shorthandAccountNames: shorthandAccountNames,
-		minAccountNumber,
-		openID: openID, // @TODO: document this all the way down the code.
-		closeID: closeID, // @TODO: document this all the way down the code.
-		accountNumberLength
-	});
+	console.log(`===== Personal Consulting Folder =====`);
+	settings.personalConsulting.rootFolder = DriveApp.getFolderById(FOLDERS.personal);
+	console.log(settings.personalConsulting);
 
-	console.log(`===== FOLDERS.CONFLUENCE =====`);
-	shorthandAccountNames = true;
-	getChildFolders({
-		rootFolder: DriveApp.getFolderById(FOLDERS.CONFLUENCE),
-		registeredAccountID: void 0,
-		regex: regexForAccountID,
-		writePermissions: writePermissionsEnabled,
-		afterID: delimiterAfterID,
-		inID: delimiterInID,
-		shorthandAccountNames: shorthandAccountNames,
-		minAccountNumber,
-		openID: openID, // @TODO: document this all the way down the code.
-		closeID: closeID, // @TODO: document this all the way down the code.
-		accountNumberLength
-	});
-
+	// getChildFolders(settings.personalConsulting);
+	// getChildFolders(settings.personalConsulting);
 	console.log(`===== EXECUTION COMPLETE =====`);
 }
-
-// const regexForAccountID_NUMERIC = new RegExp(
-// 	openID +
-// 		`[0-9]{${accountNumberLength}}` +
-// 		closeID +
-// 		delimiterAfterID
-// ); //  NORMAL Account Identification parser. NUMBERS only.
-
-// const regexForAccountID_ALPHANUMERIC = new RegExp(
-// 	openID +
-// 		`[0-9]{${accountNumberLength}}` +
-// 		delimiterInID +
-// 		`\\w{1,4}` +
-// 		closeID +
-// 		delimiterAfterID
-// ); //  shorthandAccountNamesCY Account Identification parser. ALPHANUMERIC.
