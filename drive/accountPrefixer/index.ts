@@ -1,26 +1,16 @@
 import "google-apps-script";
 import getChildFolders from "./getChildFolders";
-import {
-	FOLDERS,
-	writePermissionsEnabled,
-	delimiterAfterID,
-	delimiterInID,
-	accountNumberLength,
-	openID,
-	closeID,
-	minAccountNumber,
-	shorthandAccountNameSupport
-} from "./SETTINGS";
+import { default as settings } from "./settings";
 
-let shorthandAccountNames = shorthandAccountNameSupport; //	Weird bug
+let shorthandAccountNames = settings.shorthandAccountNameSupport; //	Weird bug
 
 const regexForAccountID = new RegExp(
-	openID +
-		`[0-9]{${accountNumberLength}}` +
-		(shorthandAccountNames ? delimiterInID : ``) +
-		(shorthandAccountNames ? `\\w{1,4}` : ``) +
-		closeID +
-		delimiterAfterID
+	settings.openID +
+	`[0-9]{${settings.accountNumberLength}}` +
+	(shorthandAccountNames ? settings.delimiterInID : ``) +
+	(shorthandAccountNames ? `\\w{1,4}` : ``) +
+	settings.closeID +
+	settings.delimiterAfterID
 );
 
 /**
@@ -28,7 +18,7 @@ const regexForAccountID = new RegExp(
  * Aside from adding (or modifying existing) account IDs, it should be able to recognize client facing FOLDERS
  * And not rename those files, as the prefixes are not very pretty.
  *
- * @todo should be able to generate account IDs by removing vowels and prefixing
+ * @TODO: should be able to generate account IDs by removing vowels and prefixing
  * with the highest incremented integer, that is, if an account ID hasn't been already assigned.
  */
 
@@ -41,50 +31,34 @@ function SteadfastAppropriator() {
 	console.log(`===== FOLDERS.TEST =====`);
 
 	getChildFolders({
-		rootFolder: DriveApp.getFolderById(FOLDERS.TEST),
-		registeredAccountID: void 0,
+		rootFolder: DriveApp.getFolderById(settings.FOLDERS.TEST),
+		// registeredAccountID: void 0,
 		regex: regexForAccountID,
-		writePermissions: writePermissionsEnabled,
-		afterID: delimiterAfterID,
-		inID: delimiterInID,
-		shorthandAccountNames: shorthandAccountNames,
-		minAccountNumber,
-		openID: openID, // @TODO: document this all the way down the code.
-		closeID: closeID, // @TODO: document this all the way down the code.
-		accountNumberLength
+		writePermissions: settings.writePermissionsEnabled,
+		afterID: settings.delimiterAfterID,
+		inID: settings.delimiterInID,
+		shorthandAccountNames,
+		minAccountNumber: settings.minAccountNumber,
+		openID: settings.openID, // @TODO: document this all the way down the code.
+		closeID: settings.closeID, // @TODO: document this all the way down the code.
+		accountNumberLength: settings.accountNumberLength
 	});
 
 	console.log(`===== FOLDERS.CONFLUENCE =====`);
 	shorthandAccountNames = true;
 	getChildFolders({
-		rootFolder: DriveApp.getFolderById(FOLDERS.CONFLUENCE),
-		registeredAccountID: void 0,
+		rootFolder: DriveApp.getFolderById(settings.FOLDERS.CONFLUENCE),
+		// registeredAccountID: void 0,
 		regex: regexForAccountID,
-		writePermissions: writePermissionsEnabled,
-		afterID: delimiterAfterID,
-		inID: delimiterInID,
-		shorthandAccountNames: shorthandAccountNames,
-		minAccountNumber,
-		openID: openID, // @TODO: document this all the way down the code.
-		closeID: closeID, // @TODO: document this all the way down the code.
-		accountNumberLength
+		writePermissions: settings.writePermissionsEnabled,
+		afterID: settings.delimiterAfterID,
+		inID: settings.delimiterInID,
+		shorthandAccountNames,
+		minAccountNumber: settings.minAccountNumber,
+		openID: settings.openID, // @TODO: document this all the way down the code.
+		closeID: settings.closeID, // @TODO: document this all the way down the code.
+		accountNumberLength: settings.accountNumberLength
 	});
 
 	console.log(`===== EXECUTION COMPLETE =====`);
 }
-
-// const regexForAccountID_NUMERIC = new RegExp(
-// 	openID +
-// 		`[0-9]{${accountNumberLength}}` +
-// 		closeID +
-// 		delimiterAfterID
-// ); //  NORMAL Account Identification parser. NUMBERS only.
-
-// const regexForAccountID_ALPHANUMERIC = new RegExp(
-// 	openID +
-// 		`[0-9]{${accountNumberLength}}` +
-// 		delimiterInID +
-// 		`\\w{1,4}` +
-// 		closeID +
-// 		delimiterAfterID
-// ); //  shorthandAccountNamesCY Account Identification parser. ALPHANUMERIC.

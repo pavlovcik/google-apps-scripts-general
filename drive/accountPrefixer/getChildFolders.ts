@@ -1,6 +1,6 @@
 import renameChildFiles from "./renameChildFiles";
 import generateAccountID from "./generateAccountID";
-import { shorthandAccountNameSupport } from "./SETTINGS";
+import { default as settings } from "./settings";
 
 export interface IGetChildFolders {
 	rootFolder: GoogleAppsScript.Drive.Folder;
@@ -41,19 +41,7 @@ export interface IGetChildFolders {
  * 	minAccountNumber
  * }
  */
-export default function getChildFolders({
-	rootFolder,
-	registeredAccountID,
-	regex,
-	writePermissions,
-	afterID,
-	inID,
-	shorthandAccountNames,
-	minAccountNumber,
-	openID,
-	closeID,
-	accountNumberLength
-}: IGetChildFolders): void {
+export default function getChildFolders({ rootFolder, registeredAccountID, regex, writePermissions, afterID, inID, shorthandAccountNames, minAccountNumber, openID, closeID, accountNumberLength }: IGetChildFolders): void {
 	const accountFolders = rootFolder.getFolders();
 	const accountFoldersFreshIterator = rootFolder.getFolders(); //  Needs to be a fresh iterator for generating an account ID
 
@@ -78,10 +66,7 @@ export default function getChildFolders({
 		addressAccountPrefix(matchesForAccountID, accountFolder);
 	}
 
-	function addressAccountPrefix(
-		matchesForAccountID: RegExpMatchArray,
-		accountFolder: GoogleAppsScript.Drive.Folder
-	) {
+	function addressAccountPrefix(matchesForAccountID: RegExpMatchArray, accountFolder: GoogleAppsScript.Drive.Folder) {
 		let accountID: string;
 		if (matchesForAccountID) {
 			//  Has an account ID in the parent folder
@@ -95,41 +80,17 @@ export default function getChildFolders({
 			// );
 			accountID =
 				registeredAccountID ||
-				generateAccountID({
-					accountFolder,
-					accountFolders: accountFoldersFreshIterator,
-					writePermissions,
-					afterID,
-					inID,
-					shorthandAccountNames,
-					minAccountNumber,
-					openID,
-					closeID,
-					accountNumberLength
-				});
+				generateAccountID({ accountFolder, accountFolders: accountFoldersFreshIterator, writePermissions, afterID, inID, shorthandAccountNames, minAccountNumber, openID, closeID, accountNumberLength });
 		}
-		const isNullAccount = new RegExp(
-			`0{${accountNumberLength}}` +
-				(shorthandAccountNameSupport ? inID : afterID)
-		).test(accountID); //	"0{?}" variable zeros, and before delimiter in key or after key if not fancy mode
+		const isNullAccount =
+			new RegExp(`0{${accountNumberLength}}` +
+				(settings.shorthandAccountNameSupport ? inID : afterID)).test(accountID); //	"0{?}" variable zeros, and before delimiter in key or after key if not fancy mode
 
 		if (isNullAccount) {
 			//  Do not rename child files if null account `0000`
 			console.log(`Ignored because account number signifies null e.g. "0000".`);
 		} else {
-			renameChildFiles({
-				accountFolder,
-				accountID,
-				regexForAccountID: regex,
-				writePermissionsEnabled: writePermissions,
-				delimiterAfterID: afterID,
-				delimiterInID: inID,
-				shorthandAccountNameSupport: shorthandAccountNames,
-				minAccountNumber,
-				openID,
-				closeID,
-				accountNumberLength
-			});
+			renameChildFiles({ accountFolder, accountID, regexForAccountID: regex, writePermissionsEnabled: writePermissions, delimiterAfterID: afterID, delimiterInID: inID, shorthandAccountNameSupport: shorthandAccountNames, minAccountNumber, openID, closeID, accountNumberLength });
 		}
 	}
 }
