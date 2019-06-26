@@ -57,7 +57,7 @@ function SteadfastAppropriator() {
 	settings.personalConsulting.rootFolder = DriveApp.getFolderById(FOLDERS.personal);
 	console.log(settings.personalConsulting);
 
-	// getChildFolders(settings.personalConsulting);
+	getChildFolders(settings.personalConsulting);
 	// getChildFolders(settings.personalConsulting);
 	console.log(`===== EXECUTION COMPLETE =====`);
 }
