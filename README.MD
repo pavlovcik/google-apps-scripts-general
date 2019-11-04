@@ -4,6 +4,16 @@
 
 This bot is designed to uniquely prefix all account related files with an ID that is easy to search globally. There are a few options for its behavior under the `settings.ts` object.
 
+### Project Setup
+
+```bash
+npm run-script login # Be sure to login as the Steadfast Appropriator or else when invoked from CLI it will show personal account making the changes.
+
+npm run-script watch # Automatically deploys and executes upon file changes.
+
+npm run-script logs # Steams execution logs from Google Cloud
+```
+
 ### Options of significance in `settings.ts`
 
 ```typescript

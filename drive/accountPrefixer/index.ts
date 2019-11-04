@@ -1,18 +1,8 @@
 import "google-apps-script";
 import getChildFolders from "./getChildFolders";
-import clone from "clone";
+import clone from "./clone.js";
 
-import {
-	FOLDERS,
-	writePermissionsEnabled,
-	delimiterAfterID,
-	delimiterInID,
-	accountNumberLength,
-	openID,
-	closeID,
-	minAccountNumber,
-	shorthandAccountNameSupport
-} from "./SETTINGS";
+import { FOLDERS, writePermissionsEnabled, delimiterAfterID, delimiterInID, accountNumberLength, openID, closeID, minAccountNumber, shorthandAccountNameSupport } from "./SETTINGS";
 
 const regexForAccountID = new RegExp(
 	openID +
@@ -49,15 +39,16 @@ let defaultSettings = {
 function SteadfastAppropriator() {
 
 	console.log(`===== EXECUTION BEGIN =====`);
-	let settings = {
-		personalConsulting: clone(defaultSettings)
-	};
+	let settings = { shanghai: clone(defaultSettings) };
 
-	console.log(`===== Personal Consulting Folder =====`);
-	settings.personalConsulting.rootFolder = DriveApp.getFolderById(FOLDERS.personal);
-	console.log(settings.personalConsulting);
+	console.log(`===== Inventum 上海 Folder =====`);
+	settings.shanghai.rootFolder = DriveApp.getFolderById(FOLDERS.inventum_shanghai);
+	console.log(settings.shanghai);
+	getChildFolders(settings.shanghai);
 
-	getChildFolders(settings.personalConsulting);
+	// console.log(`===== Personal Consulting Folder =====`);
+	// settings.personalConsulting.rootFolder = DriveApp.getFolderById(FOLDERS.personal);
+	// console.log(settings.personalConsulting);
 	// getChildFolders(settings.personalConsulting);
 	console.log(`===== EXECUTION COMPLETE =====`);
 }
